@@ -1,46 +1,9 @@
-import React from 'react';
+import { fetchProducts } from "../api/product";
 import { useProduct } from '../hooks/useProduct';
 
-const products = [
-  {
-    id: 1,
-    name: 'Basic Tee',
-    imageSrc:
-      'https://tailwindcss.com/plus-assets/img/ecommerce-images/product-page-01-related-product-01.jpg',
-    imageAlt: "Front of men's Basic Tee in black.",
-    price: '$35',
-    color: 'Black',
-  },
-  {
-    id: 2,
-    name: 'Casual Shirt',
-    imageSrc:
-      'https://tailwindcss.com/plus-assets/img/ecommerce-images/product-page-01-related-product-02.jpg',
-    imageAlt: "Front of men's Casual Shirt in white.",
-    price: '$45',
-    color: 'White',
-  },
-  {
-    id: 3,
-    name: 'Slim Jeans',
-    imageSrc:
-      'https://tailwindcss.com/plus-assets/img/ecommerce-images/product-page-01-related-product-03.jpg',
-    imageAlt: "Front of men's Slim Jeans in blue.",
-    price: '$55',
-    color: 'Blue',
-  },
-  {
-    id: 4,
-    name: 'Oversized Hoodie',
-    imageSrc:
-      'https://tailwindcss.com/plus-assets/img/ecommerce-images/product-page-01-related-product-04.jpg',
-    imageAlt: "Front of men's Oversized Hoodie in gray.",
-    price: '$60',
-    color: 'Gray',
-  },
-];
-
 const Product = () => {
+  const [products, setProducts] = useState([]);   
+  const [loading, setLoading] = useState(true);
 
   const {
     emblaRef,
@@ -53,6 +16,20 @@ const Product = () => {
     setSelectedProduct
   } = useProduct ();
 
+    useEffect(() => {
+    // เรียก API ตอน component mount
+    fetchProducts()
+      .then(setProducts)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="w-full flex justify-center items-center h-40">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-7xl mx-auto py-10 px-4">
