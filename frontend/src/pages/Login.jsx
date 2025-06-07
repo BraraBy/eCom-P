@@ -23,9 +23,6 @@ const clearImage = () => {
   setImage(null);
 };
 
-
-
-
   return (
     <main className="relative min-h-screen w-full bg-white">
       <div className="p-6">
