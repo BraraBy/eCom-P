@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 const SignInAndSignUp = () => {
   const [isLoginPage, setIsLoginPage] = useState(true);
 
+  const [accountType, setAccountType] = useState('client');
+
   const navigate = useNavigate();
 
   const handleClose = () => {
@@ -89,6 +91,36 @@ const clearImage = () => {
                 </div>
               )}
 
+              <div className="w-full text-left">
+                <label className="block mb-2 text-sm text-gray-500">Select type of account</label>
+                <div className="flex space-x-2 justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setAccountType('client')}
+                    className={`flex w-full items-center space-x-2 rounded-md border px-4 py-2 text-sm font-medium ${
+                      accountType === 'client'
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'bg-white text-blue-500 border-blue-300'
+                    }`}
+                  >
+                    <i class='bx bx-user'></i>
+                    <span>Customer</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setAccountType('worker')}
+                    className={`flex w-full items-center space-x-2 rounded-md border px-4 py-2 text-sm font-medium ${
+                      accountType === 'worker'
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'bg-white text-blue-500 border-blue-300'
+                    }`}
+                  >
+                    <i class='bx bx-store' ></i>
+                    <span>Shop</span>
+                  </button>
+                </div>
+              </div>
 
               <InputBox placeholder="Username" />
               <InputBox placeholder="Name" />
@@ -110,7 +142,9 @@ const clearImage = () => {
               <header className="mb-3 text-2xl font-bold">Log in</header>
               <InputBox placeholder="Email or username" />
               <InputBox placeholder="Password" type='password'/>
-              <button className="w-full rounded-2xl border-b-4 border-b-blue-600 bg-blue-500 py-3 font-bold text-white hover:bg-blue-400 active:translate-y-[0.125rem] active:border-b-blue-400">
+              <button 
+              onClick={() => navigate('/')}
+              className="w-full rounded-2xl border-b-4 border-b-blue-600 bg-blue-500 py-3 font-bold text-white hover:bg-blue-400 active:translate-y-[0.125rem] active:border-b-blue-400">
                 LOG IN
               </button>
             </div>

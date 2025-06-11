@@ -20,12 +20,12 @@ const Category = () => {
 
   return (
     <div className="flex justify-center gap-4 py-6">
-      {categories.map((cat, index) => (
+      {categories.map((category, index) => (
         <div
           key={index}
-          className={`w-20 h-20 ${cat.color} rounded-full flex items-center justify-center text-sm font-medium text-gray-700 shadow`}
+          className={`w-20 h-20 ${category.color} rounded-full flex items-center justify-center text-sm font-medium text-gray-700 shadow`}
         >
-          {cat.name}
+          {category.name}
         </div>
       ))}
     </div>

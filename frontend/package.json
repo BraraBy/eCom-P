@@ -15,6 +15,7 @@
     "cors": "^2.8.5",
     "embla-carousel-react": "^8.6.0",
     "express": "^5.1.0",
+    "lucide-react": "^0.514.0",
     "node-fetch": "^3.3.2",
     "nodemon": "^3.1.10",
     "path-to-regexp": "^8.2.0",

@@ -9,7 +9,7 @@ const port = process.env.WEB_PORT;
 app.use(cors());  // ไว้เปิดช่องให้สามารถดึง api จากฝั่งหน้าบ้านได้
 app.use(express.json());  // Middleware ให้ระบบรองรับ การรับค่าเข้ามาได้โดยใช้ไฟล์ JSON
 app.use(express.urlencoded({ extended: true }));  // Middleware ให้ระบบรองรับ การรับค่าเข้ามาได้โดยใช้ไฟล์ urlencoded
-
+0
 
 import categoryRoutes from './routes/categoryRoutes.js' ;
 import customersRoutes from './routes/customersRoutes.js' ;

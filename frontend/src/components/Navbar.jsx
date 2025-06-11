@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavbar } from '../hooks/useNavbar';
 import CartDrawer from "./ui/CartDrawer";
 import { Link } from 'react-router-dom';
@@ -19,8 +18,8 @@ const Navbar = () => {
   } = useNavbar();
 
   return (
-    <header className="bg-white sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+    <header className="bg-white sticky top-0  border-none">
+      <div className="container mx-auto px-4 py-4 flex items-center">
         
         {/* logo */}
         <div className="mr-auto md:w-48 flex-shrink-0">
@@ -125,7 +124,6 @@ const Navbar = () => {
         </nav>
         </div>
       </div>
-      <hr />
     </header>
   );
 };
