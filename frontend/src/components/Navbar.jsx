@@ -18,7 +18,7 @@ const Navbar = () => {
   } = useNavbar();
 
   return (
-    <header className="bg-white sticky top-0  border-none">
+    <header className="bg-white sticky top-0 shadow-md z-50">
       <div className="container mx-auto px-4 py-4 flex items-center">
         
         {/* logo */}
@@ -100,7 +100,7 @@ const Navbar = () => {
                   className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-20 animate-fade-in"
                 >
                   <Link
-                    href="#"
+                    to="/profile"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     My Account

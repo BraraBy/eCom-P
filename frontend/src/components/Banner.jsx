@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
 
@@ -8,11 +8,12 @@ import 'swiper/css/pagination';
 
 import '../index.css';
 
-import { Autoplay, Pagination } from 'swiper/modules';
+import { Autoplay, Pagination, } from 'swiper/modules';
 
 export default function Banner() {
   return (
     <>
+    <div className="absolute top-0 left-0 w-full h-full">
       <Swiper
         spaceBetween={30}
         centeredSlides={false}
@@ -33,6 +34,7 @@ export default function Banner() {
         <SwiperSlide></SwiperSlide>
         <SwiperSlide></SwiperSlide>
       </Swiper>
+    </div>
     </>
   );
 }
