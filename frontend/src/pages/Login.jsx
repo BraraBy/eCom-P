@@ -1,29 +1,20 @@
 import React, { useState } from 'react';
+import { useInfo } from '../hooks/useInfo';
 import { useNavigate } from 'react-router-dom';
 
 const SignInAndSignUp = () => {
-  const [isLoginPage, setIsLoginPage] = useState(true);
-
-  const [accountType, setAccountType] = useState('client');
-
-  const navigate = useNavigate();
-
-  const handleClose = () => {
-    navigate('/');
-  };
-
-  const [image, setImage] = useState(null);
-
-const handleImageChange = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    setImage(URL.createObjectURL(file));
-  }
-};
-
-const clearImage = () => {
-  setImage(null);
-};
+  const {
+    isLoginPage,
+    setIsLoginPage,
+    accountType,
+    setAccountType,
+    navigate,
+    handleClose,
+    image,
+    clearImage,
+    handleImageChangeLogin,
+    fileInputRef
+  } = useInfo();
 
   return (
     <main className="relative min-h-screen w-full bg-white">
@@ -73,7 +64,10 @@ const clearImage = () => {
               <header className="mb-3 text-2xl font-bold">Create your profile</header>
 
               {/* อัปโหลดรูป */}
-              <ImageUploadInput onImageChange={handleImageChange} />
+              <ImageUploadInput 
+                onImageChange={handleImageChangeLogin}
+                ref={fileInputRef} 
+              />
               {image && (
                 <div className="flex flex-col items-center space-y-2">
                   <img
@@ -125,7 +119,7 @@ const clearImage = () => {
               <InputBox placeholder="Username" />
               <InputBox placeholder="Name" />
               <InputBox placeholder="Surname" />
-              <InputBox placeholder="Email" />
+              <InputBox placeholder="Email" type='email'/>
               <InputBox placeholder="Phone Number" />
               <InputBox placeholder="Password" type="password" />
 
@@ -165,12 +159,12 @@ const InputBox = ({ placeholder, type = 'text' }) => (
     />
   </div>
 );
-
-const ImageUploadInput = ({ onImageChange }) => {
+const ImageUploadInput = React.forwardRef(({ onImageChange }, ref) => {
   return (
     <div className="w-full text-left">
       <label className="block mb-1 text-sm text-gray-500">Profile Image</label>
       <input
+        ref={ref}
         type="file"
         accept="image/*"
         onChange={onImageChange}
@@ -183,7 +177,7 @@ const ImageUploadInput = ({ onImageChange }) => {
       />
     </div>
   );
-};
+});
 
 
 export default SignInAndSignUp;

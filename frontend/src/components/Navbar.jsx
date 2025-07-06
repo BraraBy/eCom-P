@@ -91,7 +91,7 @@ const Navbar = () => {
                 onClick={toggleDropdown}
                 className="p-1"
               >
-              <img className="w-10 h-10 sm:w-9 sm:h-9 md:w-9 md:h-9 lg:w-10 lg:h-10 rounded-full object-cover" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="Rounded avatar"/>
+              <img className="w-10 h-10 sm:w-9 sm:h-9 md:w-9 md:h-9 lg:w-10 lg:h-10 rounded-full object-cover" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Rounded avatar"/>
               </button>
 
               {/* Dropdown Menu */}
@@ -106,7 +106,7 @@ const Navbar = () => {
                     My Account
                   </Link>
                   <Link
-                    href="#"
+                    to="/orders"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     Orders

@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const CartDrawer = ({ isOpen, onClose }) => {
+  const navigate = useNavigate();
   const drawerRef = useRef(null);
   const overlayRef = useRef(null);
   const [cartItems, setCartItems] = useState([
@@ -154,6 +156,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
               </div>
 
               <button
+                onClick={() => navigate('/checkout')}
                 className="w-full rounded-md bg-gray-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-gray-700 cursor-pointer"
               >
                 Checkout

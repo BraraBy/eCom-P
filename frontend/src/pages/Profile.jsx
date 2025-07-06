@@ -1,52 +1,20 @@
-import React, { useState , useRef } from "react";
+import { useInfo } from "../hooks/useInfo";
 import { Navbar, Footer } from "../components";
 
 const ProfileForm = () => {
-
-const [avatar, setAvatar] = useState("https://cdn-icons-png.flaticon.com/512/149/149071.png");
-const [cover, setCover] = useState("https://placehold.net/default.png");
-
-
-    const avatarInputRef = useRef(null);
-    const coverInputRef = useRef(null);
-
-    const handleImageChange = (e, setImage) => {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-        setImage(reader.result);
-        };
-        reader.readAsDataURL(file);
-    }
-    };
-
-  const [formData, setFormData] = useState({
-    username: "",
-    about: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-    streetAddress: "",
-    city: "",
-    state: "",
-    country: "",
-    zip: ""
-  });
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("payload", formData);
-    // Place your API call here
-  };
+  const {
+    avatar,
+    setAvatar,
+    cover,
+    setCover,
+    avatarInputRef,
+    coverInputRef,
+    handleImageChange,
+    formData,
+    setFormData,
+    handleChange,
+    handleSubmit
+  } = useInfo();
 
   return (
     <form onSubmit={handleSubmit} className="bg-gray-100 min-h-screen">
@@ -115,7 +83,7 @@ const [cover, setCover] = useState("https://placehold.net/default.png");
               value={formData.username}
               onChange={handleChange}
               required
-              className="w-full mt-1 border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-indigo-700"
+              className="w-full mt-1 border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
             />
           </div>
           <div>
@@ -127,7 +95,7 @@ const [cover, setCover] = useState("https://placehold.net/default.png");
               value={formData.firstName}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-indigo-700"
+              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
             />
           </div>
           <div>
@@ -139,7 +107,7 @@ const [cover, setCover] = useState("https://placehold.net/default.png");
               value={formData.lastName}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-indigo-700"
+              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
             />
           </div>
           <div>
@@ -151,7 +119,7 @@ const [cover, setCover] = useState("https://placehold.net/default.png");
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-indigo-700"
+              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
             />
           </div>
            <div>
@@ -163,7 +131,7 @@ const [cover, setCover] = useState("https://placehold.net/default.png");
               value={formData.Address}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-indigo-700"
+              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
             />
           </div>
           <div>
@@ -175,7 +143,7 @@ const [cover, setCover] = useState("https://placehold.net/default.png");
               value={formData.streetAddress}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-indigo-700"
+              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
             />
           </div>
           <div>
@@ -187,7 +155,7 @@ const [cover, setCover] = useState("https://placehold.net/default.png");
               value={formData.city}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-indigo-700"
+              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
             />
           </div>
           <div>
@@ -199,7 +167,7 @@ const [cover, setCover] = useState("https://placehold.net/default.png");
               value={formData.state}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-indigo-700"
+              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
             />
           </div>
           <div>
@@ -211,7 +179,7 @@ const [cover, setCover] = useState("https://placehold.net/default.png");
               value={formData.country}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-indigo-700"
+              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
             />
           </div>
           <div>
@@ -223,7 +191,7 @@ const [cover, setCover] = useState("https://placehold.net/default.png");
               value={formData.zip}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-indigo-700"
+              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
             />
           </div>
         </div>
@@ -232,13 +200,13 @@ const [cover, setCover] = useState("https://placehold.net/default.png");
         <div className="max-w-4xl mx-auto py-6 flex justify-end gap-4">
           <button
             type="button"
-            className="bg-gray-200 text-indigo-600 px-6 py-2 text-sm rounded hover:bg-gray-300 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
+            className="bg-gray-200 text-blue-900 px-6 py-2 text-sm rounded hover:bg-gray-300 focus:ring-2 focus:ring-offset-2 focus:ring-blue-900"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="bg-indigo-700 text-white px-8 py-2 text-sm rounded hover:bg-indigo-600 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-700"
+            className="bg-blue-900 text-white px-8 py-2 text-sm rounded hover:bg-blue-800 focus:ring-2 focus:ring-offset-2 focus:ring-blue-900"
           >
             Save
           </button>
