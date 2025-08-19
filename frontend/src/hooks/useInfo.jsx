@@ -107,16 +107,14 @@ const handleSubmit = async (e) => {
         body: form,
       });
 
-      console.log(res);
-
       if (!res.ok) {
         throw new Error(`HTTP error! statussss: ${res.status}`);
       }
 
-      const result = await res.json();
-      waitForID = result.uploadID;
+      const resJson = await res.json();
+      waitForID = resJson.result.customers_id;
 
-      console.log('สร้างบัญชีสำเร็จ:', result);
+      console.log('สร้างบัญชีสำเร็จ:', resJson);
       alert('สร้างบัญชีสำเร็จ และอัปโหลดรูปแล้ว');
       resetForm();
       navigate('/');
@@ -142,6 +140,7 @@ const handleSubmit = async (e) => {
         method: 'POST',
         body: firebaseForm,
       });
+      
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }

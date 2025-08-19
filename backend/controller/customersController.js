@@ -1,8 +1,11 @@
 import postgres from '../utils/db.js';
 import path from 'path';
 import multer from 'multer';
+import bcrypt from 'bcrypt';
 
 let result = '';
+
+const SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS || 10);
 
 const getAllCus = async () => {
   const client = await postgres.connect();
@@ -108,25 +111,38 @@ const checkCus = async (data) => {
 
 // Create new customers
 const createCus = async (data) => {
-    const { first_name, last_name, phone, address,  password, email , role_id } = data;
-    // console.log(data);
-    
-    const client = await postgres.connect();
-    try {
-      const result = await client.query(
-          `INSERT INTO customers ( first_name, last_name, phone, address, password, email, role_id)
-               VALUES ($1, $2, $3, $4, $5, $6, $7)
-               RETURNING *;`,
-          [ first_name, last_name, phone, address, password, email, role_id]
-      );
-      return result.rows;
-    } catch (err) {
-      console.error('Error creating new Customers:', err);
+  const { first_name, last_name, phone, address, password, email, role_id } = data;
+
+  const client = await postgres.connect();
+  try {
+    // ตรวจซ้ำอีเมลก่อน
+    const dup = await client.query(
+      'SELECT 1 FROM customers WHERE email = $1 LIMIT 1;',
+      [email]
+    );
+    if (dup.rowCount > 0) {
+      const err = new Error('Email already exists');
+      err.statusCode = 400;
       throw err;
-    } finally {
-      client.release();
     }
-  };
+
+    // hash รหัสผ่านตรงนี้ (ชั้น controller)
+    const hashed = await bcrypt.hash(password, SALT_ROUNDS);
+
+    const result = await client.query(
+      `INSERT INTO customers (first_name, last_name, phone, address, password, email, role_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)
+       RETURNING customers_id, first_name, last_name, phone, address, email, role_id, registered_date;`,
+      [first_name, last_name, phone, address, hashed, email, role_id]
+    );
+    return result.rows[0]; // ส่งกลับโดยไม่ติด password
+  } catch (err) {
+    console.error('Error creating customer:', err);
+    throw err;
+  } finally {
+    client.release();
+  }
+};
 
 // Update customers
 const updateCus = async (customers_id, data) => {

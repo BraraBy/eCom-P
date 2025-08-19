@@ -1,13 +1,9 @@
 import express from 'express'; // Library HTTP request
 import dotenv from 'dotenv'; 
 import cors from 'cors'; // โหลด Middleware
-import path from 'path'; // ใช้สำหรับจัดการกับ path ของไฟล์
-import { fileURLToPath } from 'url';
 
 dotenv.config({ path: 'setting.env' });  // โหลดไฟล์ setting 
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.WEB_PORT;
 

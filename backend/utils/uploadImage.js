@@ -36,12 +36,13 @@ const uploadFile = async (req, res) => {
             return res.status(400).send('No file uploaded.');
         }
 
+
         // Get customer_id from request body
-        const customer_id = req.body.customer_id;
+        const { customer_id } = req.body;
         if (!customer_id) {
             return res.status(400).send('No customer_id provided.');
         }
-
+        
         const dateTime = giveCurrentDateTime();
         const storageRef = ref(storage, `eCom-P/${req.file.originalname}_${dateTime}`) ;
 
@@ -53,7 +54,6 @@ const uploadFile = async (req, res) => {
 
         const downloadURL = await getDownloadURL(snapshot.ref);
 
-        // Save downloadURL to PostgreSQL
         const client = await postgres.connect();
         try {
             await client.query(

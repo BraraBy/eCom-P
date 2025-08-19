@@ -164,7 +164,7 @@ const SignInAndSignUp = () => {
               />
 
               <button 
-                type="submit" 
+                type="" 
                 className="w-full rounded-2xl border-b-4 border-b-blue-600 bg-blue-500 py-3 font-bold text-white hover:bg-blue-400 active:translate-y-[0.125rem] active:border-b-blue-400"
               >
                 CREATE ACCOUNT
@@ -176,7 +176,7 @@ const SignInAndSignUp = () => {
           {!isLoginPage && (
             <div className="space-y-4">
               <header className="mb-3 text-2xl font-bold">Log in</header>
-              <form onSubmit={handleLogin}>
+              <form onSubmit={handleLogin} className='space-y-4'>
                 <InputBox
                   placeholder="Email"
                   type="email"
@@ -195,14 +195,6 @@ const SignInAndSignUp = () => {
                   type="submit" className="w-full rounded-2xl border-b-4 border-b-blue-600 bg-blue-500 py-3 font-bold text-white hover:bg-blue-400 active:translate-y-[0.125rem] active:border-b-blue-400"
                 >LOG IN</button>
               </form>
-              {/* <InputBox placeholder="Email or username" />
-              <InputBox placeholder="Password" type="password"/>
-              <button 
-                onClick={() => navigate('/')}
-                className="w-full rounded-2xl border-b-4 border-b-blue-600 bg-blue-500 py-3 font-bold text-white hover:bg-blue-400 active:translate-y-[0.125rem] active:border-b-blue-400"
-              >
-                LOG IN
-              </button> */}
             </div>
           )}
         </div>

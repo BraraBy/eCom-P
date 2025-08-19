@@ -1,6 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt.js';
 import Controller from '../controller/customersController.js';
 
 // firebase upload
@@ -24,23 +24,61 @@ rt.post('/login', async (req, res) => {
     if (!user) {
       return res.status(401).json({ status: '401', message: 'Invalid email or password' });
     }
-    // Compare password using bcrypt
+
     const isMatch = await bcrypt.compare(password, user.password);
-    if (isMatch) {
-      // Remove password before sending user data
-      delete user.password;
-      // Create JWT token
-      const token = jwt.sign(
-        { customers_id: user.customers_id, email: user.email, role: user.role_id },
-        process.env.JWT_SECRET, // Use a strong secret in production, store in env
-        { expiresIn: '1h' }
-      );
-      return res.status(200).json({ status: '200', user, token });
-    } else {
+    if (!isMatch) {
       return res.status(401).json({ status: '401', message: 'Invalid email or password' });
     }
+
+    // ไม่ส่ง password กลับ
+    delete user.password;
+
+    // สร้าง token
+    const accessToken = signAccessToken({
+      customers_id: user.customers_id,
+      email: user.email,
+      role: user.role_id
+    });
+
+    // (ตัวเลือก) refresh token
+    let refreshToken = null;
+    if (process.env.JWT_REFRESH_SECRET) {
+      refreshToken = signRefreshToken({
+        customers_id: user.customers_id,
+        email: user.email,
+        role: user.role_id
+      });
+    }
+
+    return res.status(200).json({
+      status: '200',
+      result: {
+        user,
+        accessToken,
+        refreshToken, // ถ้าไม่ใช้ refresh ก็เอาออกได้
+      }
+    });
   } catch (err) {
-    res.status(500).json({ status: '500', message: 'Server Error' });
+    return res.status(500).json({ status: '500', message: 'Server Error' });
+  }
+});
+
+rt.post('/refresh', async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) return res.status(400).json({ status: '400', message: 'Missing refresh token' });
+
+    const payload = verifyRefreshToken(refreshToken);
+    // ออก access token ใหม่
+    const accessToken = signAccessToken({
+      customers_id: payload.customers_id,
+      email: payload.email,
+      role: payload.role
+    });
+
+    return res.status(200).json({ status: '200', result: { accessToken }});
+  } catch (err) {
+    return res.status(401).json({ status: '401', message: 'Invalid refresh token' });
   }
 });
 
@@ -76,28 +114,17 @@ rt.post('/', upload.none(), async (req, res) => {
     password: req.body.password,
   };
 
-  if (!info.first_name || !info.last_name) {
-    return res.status(400).json({ status: '400', message: 'First name and last name are required.' });
+  if (!info.first_name || !info.last_name || !info.email || !info.password) {
+    return res.status(400).json({ status: '400', message: 'Missing required fields.' });
   }
 
   try {
-    const Check = await Controller.checkCus(info);
-    const roleIdTrans = await Controller.roleNameToID(info.role)
-    info.role = roleIdTrans;
-
-    if (Check) {
-      return res.status(400).json({ status: '400', message: 'Email Already exists' });
-    }
-
-    // Hash the password before saving
-    const saltRounds = 10;
-    info.password = await bcrypt.hash(info.password, saltRounds);
-
-    const checkedCus = await Controller.createCus(info);
-    return res.status(201).json({ status: '201', result: checkedCus, uploadID: checkedCus[0].customers_id });
+    const roleIdTrans = await Controller.roleNameToID(info.role);
+    const created = await Controller.createCus({ ...info, role_id: roleIdTrans });
+    return res.status(201).json({ status: '201', result: created });
   } catch (err) {
-    console.error('Error creating customer:', err);
-    return res.status(500).json({ status: '500', message: 'Server Error' });
+    const code = err.statusCode || 500;
+    return res.status(code).json({ status: String(code), message: err.message || 'Server Error' });
   }
 });
 

@@ -1,5 +1,6 @@
 import express from 'express';
 import Controller from '../controller/orderController.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const rt = express.Router();
 
@@ -8,6 +9,17 @@ rt.get('/', async (req, res) => {
     const data = await Controller.getAllOrd();
     res.status(200).json({ status: '200', result: data });
   } catch (err) {
+    res.status(500).json({ status: '500', result: 'Server Error' });
+  }
+});
+
+rt.get('/', requireAuth, async (req, res) => {
+  // req.user มี { customers_id, email, role }
+  // ถ้าต้องการเฉพาะ owner: filter ด้วย customers_id
+  try {
+    const data = await Controller.getAllOrdByCustomer(req.user.customers_id);
+    res.status(200).json({ status: '200', result: data });
+  } catch {
     res.status(500).json({ status: '500', result: 'Server Error' });
   }
 });
