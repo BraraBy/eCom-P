@@ -21,9 +21,10 @@ const [profileImage, setProfileImage] = useState(null); // สำหรับฟ
         reader.readAsDataURL(file);
     }
     };
+  
+  // ข้อมูลหลักสำหรับ customers table
 
   let [formData, setFormData] = useState({
-    // ข้อมูลหลักสำหรับ customers table
     first_name: "",
     last_name: "",
     phone: "",
@@ -144,13 +145,25 @@ const handleSubmit = async (e) => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
+      const data = await res.json(); // ควรเป็น { downloadURL: '...' }
+      const url = data.downloadURL;
+      if (!url) {
+        throw new Error('ไม่พบ downloadURL ใน response');
+      }
+
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+      u.image_profile = url;
+      localStorage.setItem('user', JSON.stringify(u));
+      window.dispatchEvent(new Event('auth:changed')); // ให้ useNavbar รีเฟรชรูป
+
       resetImage();
-    } 
-    catch (err) {
-      console.error('เกิดข้อผิดพลาด:', err);
+    } catch (err) {
+      console.error('อัปโหลดรูปผิดพลาด:', err);
       alert('upload image ล้มเหลว: ' + err.message);
     }
   };
+
+  
 
   
 
@@ -209,10 +222,13 @@ const handleSubmit = async (e) => {
         });
         const data = await res.json();
         if (res.ok) {
-          // Save user info to localStorage or context
-          localStorage.setItem('user', JSON.stringify(data.user));
+          const user = data.result?.user || data.user || null;
+          if (user) {
+            localStorage.setItem('user', JSON.stringify(user));
+            window.dispatchEvent(new Event('auth:changed')); // ให้ Navbar รู้ว่ามี user ใหม่
+          }
           alert('Login successful!');
-          navigate('/'); // or wherever you want
+          navigate('/');
         } else {
           alert(data.message || 'Login failed');
         }

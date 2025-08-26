@@ -29,6 +29,17 @@
   }
 }
 
+.swiper-pagination-bullet {
+  @apply bg-white opacity-100;
+}
+
+.swiper-pagination-bullet-active {
+  @apply bg-gray-600;
+}
+
+.logo-color {
+  color: #005d9d;
+}
 
 .swiper {
   width: 100%;

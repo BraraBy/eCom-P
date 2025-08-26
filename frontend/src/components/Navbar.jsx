@@ -1,7 +1,8 @@
 import { useNavbar } from '../hooks/useNavbar';
 import CartDrawer from "./ui/CartDrawer";
 import { Link } from 'react-router-dom';
-
+import { logout } from '../api/auth';
+import img from '../image/e-comP_logo.png';
 
 const Navbar = () => {
   const {
@@ -14,7 +15,9 @@ const Navbar = () => {
     setSearchText,
     isCartOpen,
     setIsCartOpen,
-    navigate
+    navigate,
+    avatarUrl,
+    user,
   } = useNavbar();
 
   return (
@@ -22,14 +25,14 @@ const Navbar = () => {
       <div className="container mx-auto px-4 py-4 flex items-center">
         
         {/* logo */}
-        <div className="mr-auto md:w-48 flex-shrink-0">
+        <button className="mr-auto md:w-48 flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
           <img
-            className="h-8 md:h-10 cursor-pointer"
-            onClick={() => navigate('/')}
-            src="https://i.ibb.co/98pHdFq/2021-10-27-15h51-15.png"
+            className="h-15 md:h-15 cursor-pointer"
+            src={img}
             alt="Brand Logo"
           />
-        </div>
+          <p className="border-l-3 py-1 pl-3 border-gray-300 font-medium logo-color">e-ComP</p>
+        </button>
 
         <div className="flex items-center space-x-2 flex-1 justify-end">
         {/* search */}
@@ -72,7 +75,7 @@ const Navbar = () => {
 
         {/* buttons */} 
         <nav className="contents">
-          <ul className="flex ml-4 xl:w-48 items-center justify-end">
+          <ul className="flex ml-4 xl:w-48 items-center justify-end space-x-3">
 
             
             {/* Cart */}
@@ -88,35 +91,53 @@ const Navbar = () => {
             {/* User */}
             <li className="ml-2 lg:ml-4 relative inline-block" ref={dropdownRef}>
               <button
+                className="w-10 h-10 rounded-full overflow-hidden ring-1 ring-gray-200"
                 onClick={toggleDropdown}
-                className="p-1"
               >
-              <img className="w-10 h-10 sm:w-9 sm:h-9 md:w-9 md:h-9 lg:w-10 lg:h-10 rounded-full object-cover" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Rounded avatar"/>
+                <img
+                  src={avatarUrl}
+                  alt="avatar"
+                  className="w-full h-full object-cover"
+                  onError={(e) => { e.currentTarget.src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
+                />
               </button>
 
-              {/* Dropdown Menu */}
               {isDropdownOpen && (
-                <div
-                  className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-20 animate-fade-in"
-                >
-                  <Link
-                    to="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    My Account
-                  </Link>
-                  <Link
-                    to="/orders"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Orders
-                  </Link>
-                  <Link
-                    to="/Login"
-                    className="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-100"
-                  >
-                    Sign Up
-                  </Link>
+                <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg p-2">
+                  {/* ถ้ายังไม่ login → มีแค่ Login */}
+                  {!user ? (
+                    <button
+                      onClick={() => navigate('/login')}
+                      className="block w-full text-left px-3 py-2 text-sm text-blue-500 hover:bg-blue-100 font-bold "
+                    >
+                      Login
+                    </button>
+                  ) : (
+                    /* login แล้ว → เมนูเดิม */
+                    <>
+                      <Link
+                        to="/profile"
+                        className="block px-3 py-2 text-sm hover:bg-gray-100"
+                      >
+                        My Account
+                      </Link>
+                      <Link
+                        to="/orders"
+                        className="block px-3 py-2 text-sm hover:bg-gray-100"
+                      >
+                        Orders
+                      </Link>
+                      <button
+                        onClick={() => {
+                          logout();
+                          navigate('/');
+                        }}
+                        className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-100 font-bold"
+                      >
+                        Logout
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </li>

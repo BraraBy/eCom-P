@@ -1,169 +1,183 @@
-import React, { useEffect, useState } from "react";
-import { useProduct } from '../hooks/useProduct';
+import { useState } from "react";
+import useProduct from "../hooks/useProduct";
 
-const products = [
-  {
-    id: 1,
-    name: 'Basic Tee',
-    imageSrc:
-      'https://tailwindcss.com/plus-assets/img/ecommerce-images/product-page-01-related-product-01.jpg',
-    imageAlt: "Front of men's Basic Tee in black.",
-    price: '$35',
-    color: 'Black',
-  },
-  {
-    id: 2,
-    name: 'Casual Shirt',
-    imageSrc:
-      'https://tailwindcss.com/plus-assets/img/ecommerce-images/product-page-01-related-product-02.jpg',
-    imageAlt: "Front of men's Casual Shirt in white.",
-    price: '$45',
-    color: 'White',
-  },
-  {
-    id: 3,
-    name: 'Slim Jeans',
-    imageSrc:
-      'https://tailwindcss.com/plus-assets/img/ecommerce-images/product-page-01-related-product-03.jpg',
-    imageAlt: "Front of men's Slim Jeans in blue.",
-    price: '$55',
-    color: 'Blue',
-  },
-  {
-    id: 4,
-    name: 'Oversized Hoodie',
-    imageSrc:
-      'https://tailwindcss.com/plus-assets/img/ecommerce-images/product-page-01-related-product-04.jpg',
-    imageAlt: "Front of men's Oversized Hoodie in gray.",
-    price: '$60',
-    color: 'Gray',
-  },
-];
+const FALLBACK_IMG = "https://via.placeholder.com/400x300.png?text=No+Image";
+const formatPrice = (n) =>
+  typeof n === "number"
+    ? n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : n;
 
-const Product = () => {
+export default function Product() {
+  const { items, loading, error, count } = useProduct(); // ยังใช้ hook เดิม
+  const [selected, setSelected] = useState(null);
+  const [qty, setQty] = useState(1);
 
-  const {
-    emblaRef,
-    prevBtnEnabled,
-    nextBtnEnabled,
-    scrollNext,
-    scrollPrev,
-    addToCart,
-    selectedProduct,
-    setSelectedProduct
-  } = useProduct ();
+  // TODO: เปลี่ยนให้เรียกฟังก์ชัน cart จริงของคุณ
+  const onAddToCart = (product, quantity) => {
+    // ตัวอย่าง fallback: ส่ง event ให้ส่วนอื่นไปรับ
+    window.dispatchEvent(
+      new CustomEvent("cart:add", { detail: { product, quantity } })
+    );
+    // ปิดโมดอลหลังเพิ่ม
+    setSelected(null);
+    setQty(1);
+  };
+
+  const openModal = (p) => {
+    setSelected(p);
+    setQty(1);
+  };
+
+  const inc = () =>
+    setQty((q) => Math.min(q + 1, typeof selected?.stock === "number" ? selected.stock : q + 1));
+  const dec = () => setQty((q) => Math.max(1, q));
+
+  if (loading) {
+    return (
+      <section className="container mx-auto px-4 py-8">
+        <div className="mb-4 text-sm text-gray-500">Loading products…</div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="h-60 rounded-xl bg-gray-100 animate-pulse" />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="container mx-auto px-4 py-8">
+        <div className="text-red-600">Error: {error}</div>
+      </section>
+    );
+  }
 
   return (
-    <div className="w-full max-w-7xl mx-auto py-10 px-4">
-      <h2 className="text-2xl font-bold mb-6 text-center text-gray-900">Product</h2>
-
-      <div className="relative">
-        <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex gap-6">
-            {products.map((product) => (
-              <div
-                className="w-[90%] sm:w-1/2 md:w-1/3 lg:w-1/4 shrink-0"
-                key={product.id}
-              >
-                <div
-                  className="group relative bg-white rounded-lg shadow hover:shadow-lg transition cursor-pointer"
-                  onClick={() => setSelectedProduct(product)}
-                >
-                  <img
-                    alt={product.imageAlt}
-                    src={product.imageSrc}
-                    className="aspect-square w-full rounded-t-lg bg-gray-200 object-cover"
-                  />
-                  <div className="p-4 flex justify-between">
-                    <div>
-                      <h3 className="text-bold text-gray-700 font-bold">{product.name}</h3>
-                      <p className="mt-1 text-sm text-gray-500">{product.color}</p>
-                    </div>
-                    <p className="text-sm font-medium text-gray-900">{product.price}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {prevBtnEnabled && (
-          <button
-            onClick={scrollPrev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 outline-none "
-          >
-            <i className='bx bxs-chevron-left text-2xl text-gray-600 hover:text-red-300' ></i>
-          </button>
-        )}
-        {nextBtnEnabled && (
-          <button
-            onClick={scrollNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full outline-none "
-          >
-            <i className='bx bxs-chevron-right text-2xl text-gray-600 hover:text-red-300' ></i>
-          </button>
-        )}
+    <section className="container mx-auto px-4 py-8">
+      <div className="flex items-end justify-between mb-6">
+        <h2 className="text-xl font-semibold">Product</h2>
+        <span className="text-sm text-gray-500">Total: {count}</span>
       </div>
 
-      {/* MODAL */}
-      {selectedProduct && (
-        <div
-          className="fixed inset-0 z-50 grid place-content-center bg-black/50 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modalTitle"
-        >
-          <div className="w-full sm:w-[400px] md:w-[500px] lg:w-[600px] rounded-lg bg-white p-6 shadow-lg relative">
-            <div className="flex items-start justify-between">
-              <h2 id="modalTitle" className="text-xl font-bold text-black sm:text-2xl">
-                {selectedProduct.name}
-              </h2>
-
-              <button
-                type="button"
-                onClick={() => setSelectedProduct(null)}
-                className="-me-4 -mt-4 rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600 focus:outline-none"
-                aria-label="Close"
-              >
-                <i className='bx bx-x text-2xl'></i>
-              </button>
-            </div>
-
-            <div className="w-full mt-4 space-y-3">
+      {/* GRID สินค้า */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {items.map((p) => (
+          <article
+            key={p.id}
+            className="rounded-xl bg-white shadow-sm hover:shadow-md transition overflow-hidden"
+          >
+            <button
+              className="block w-full aspect-[4/3] bg-gray-50"
+              onClick={() => openModal(p)}
+              aria-label={`Open ${p.name}`}
+            >
               <img
-                src={selectedProduct.imageSrc}
-                alt={selectedProduct.imageAlt}
-                className="w-full h-[300px] object-contain rounded-lg mb-4"
+                src={p.image_url || FALLBACK_IMG}
+                alt={p.name}
+                className="w-full h-full object-cover"
+                onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
               />
-              <p className="text-gray-700 text-sm">Color: {selectedProduct.color}</p>
-              <p className="text-gray-900 font-semibold">{selectedProduct.price}</p>
+            </button>
+
+            <div className="p-3">
+              <h3 className="line-clamp-1 font-medium">{p.name}</h3>
+              <div className="mt-1 flex items-baseline justify-between">
+                <span className="text-indigo-600 font-semibold">฿{formatPrice(p.price)}</span>
+                <span className="text-xs text-gray-500">
+                  {typeof p.stock === "number" ? `Stock: ${p.stock}` : null}
+                </span>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      {/* MODAL (ไม่มี description; เพิ่ม qty + Add to Cart) */}
+      {selected && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+          onClick={() => setSelected(null)}
+        >
+          <div
+            className="w-full max-w-2xl bg-white rounded-2xl overflow-hidden shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <h4 className="font-semibold line-clamp-1">{selected.name}</h4>
+              <button onClick={() => setSelected(null)} className="p-2 rounded hover:bg-gray-100">
+                <i className="bx bx-x text-2xl" />
+              </button>
             </div>
 
-            <footer className="mt-6 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setSelectedProduct(null)}
-                className="rounded bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
-              >
-                Cancel
-              </button>
+            {/* Body */}
+            <div className="grid md:grid-cols-2 gap-4 p-4">
+              <div className="aspect-[4/3] bg-gray-50 rounded-lg overflow-hidden">
+                <img
+                  src={selected.image_url || FALLBACK_IMG}
+                  alt={selected.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
+                />
+              </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  addToCart(selectedProduct);
-                  setSelectedProduct(null);
-                }}
-                className="rounded bg-gray-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
-              >
-                Add to Cart
-              </button>
-            </footer>
+              <div className="space-y-4">
+                <div className="text-2xl font-bold text-indigo-700">
+                  ฿{formatPrice(selected.price)}
+                </div>
+                {typeof selected.stock === "number" && (
+                  <div className="text-sm text-gray-500">Stock: {selected.stock}</div>
+                )}
+
+                {/* Quantity */}
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={dec}
+                    className="w-9 h-9 rounded-md border border-gray-300 hover:bg-gray-50"
+                    aria-label="Decrease quantity"
+                  >
+                    –
+                  </button>
+                  <input
+                    type="number"
+                    min={1}
+                    max={typeof selected.stock === "number" ? selected.stock : undefined}
+                    value={qty}
+                    onChange={(e) => {
+                      const v = Math.max(
+                        1,
+                        Math.min(
+                          Number(e.target.value || 1),
+                          typeof selected.stock === "number" ? selected.stock : Number(e.target.value || 1)
+                        )
+                      );
+                      setQty(v);
+                    }}
+                    className="w-16 text-center border rounded-md py-1"
+                  />
+                  <button
+                    onClick={inc}
+                    className="w-9 h-9 rounded-md border border-gray-300 hover:bg-gray-50"
+                    aria-label="Increase quantity"
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* Add to Cart */}
+                <button
+                  onClick={() => onAddToCart(selected, qty)}
+                  disabled={typeof selected.stock === "number" && selected.stock < 1}
+                  className="w-full py-3 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 disabled:bg-gray-300"
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
-};
-
-export default Product;
+}

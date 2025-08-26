@@ -74,14 +74,14 @@ const checkProName = async (data) => {
 
 // Create new customers
 const createPro = async (data) => {
-    const { name, discription, price, stock, image_url,category_id } = data;
+    const { name, price, stock, image_url,category_id } = data;
     const client = await postgres.connect();
     try {
       const result = await client.query(
-          `INSERT INTO products ( name, discription, price, stock, image_url, category_id)
-               VALUES ($1, $2, $3, $4, $5, $6)
+          `INSERT INTO products ( name, price, stock, image_url, category_id)
+               VALUES ($1, $2, $3, $4, $5)
                RETURNING *;`,
-          [ name, discription, price, stock, image_url,category_id]
+          [ name, price, stock, image_url,category_id]
       );
       return result.rows;
     } catch (err) {
@@ -94,15 +94,15 @@ const createPro = async (data) => {
 
 // Update customers
 const updatePro = async (product_id, data) => {
-    const { name, discription, price, stock, image_url,category_id } = data;
+    const { name, price, stock, image_url,category_id } = data;
     const client = await postgres.connect();
     try { 
       const result = await client.query(
           `UPDATE products
-               SET name = $1, description = $2, price = $3, stock = $4, image_url = $5, category_id = $6
-               WHERE product_id = $7
+               SET name = $1, price = $2, stock = $3, image_url = $4, category_id = $5
+               WHERE product_id = $6
                RETURNING *;`,
-          [name, discription, price, stock, image_url,category_id, product_id]
+          [name, price, stock, image_url,category_id, product_id]
       );
       
       return result.rows;
@@ -113,7 +113,6 @@ const updatePro = async (product_id, data) => {
       client.release();
     }
   };
-
 
 // Force Delete Prefix record.
 const deletePro = async (product_id) => {

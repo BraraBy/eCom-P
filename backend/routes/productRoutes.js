@@ -34,7 +34,6 @@ rt.get('/:id', async (req, res) => {
 rt.post('/', async (req, res) => {
   const info = {
     name: req.body.name,
-    description: req.body.description,
     price: req.body.price,
     stock: req.body.stock,
     image_url: req.body.image_url,
