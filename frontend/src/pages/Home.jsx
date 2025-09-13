@@ -10,11 +10,11 @@ const App = () => {
         <Banner />
       </div>
 
-      <div className="px-6 py-6 space-y-2 w-full">
+      <div className="px-10 py-3 space-y-2 w-full">
         <Category />
       </div>
 
-      <div className="px-6 py-6 space-y-6 min-h-[600px]">
+      <div className="px-10 py-3 space-y-6 min-h-[400px]">
         <Product />
       </div>
 

@@ -23,7 +23,7 @@ const Navbar = () => {
 
   return (
     <header className="bg-white sticky top-0 shadow-md z-100">
-      <div className="sm:px-5 md:px-10 xl:px-50 px-5 py-4 flex justify-between items-center">
+      <div className="sm:px-5 md:px-8 xl:px-80 px-5 py-4 flex justify-between items-center">
         <div
           className="flex flex-row cursor-pointer"
           onClick={() => navigate('/')}
@@ -54,7 +54,7 @@ const Navbar = () => {
         </div>
 
         <nav className="contents">
-          <ul className="flex items-center gap-2 flex-row">
+          <ul className="flex items-center gap-4 flex-row">
             <li>
               <div className="flex items-center md:hidden">
                 {isSearchOpen ? (

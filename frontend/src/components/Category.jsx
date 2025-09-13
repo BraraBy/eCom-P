@@ -66,7 +66,7 @@ export default function Category() {
  return (
   <div className="py-3 max-w-7xl mx-auto">
     {/* มือถือ: แนวนอนเลื่อนได้ */}
-    <div className="flex md:hidden gap-3 overflow-x-auto no-scrollbar px-2 justify-items-center">
+    <div className="flex md:hidden gap-3 overflow-x-auto no-scrollbar px-2">
       {categories.map((c) => {
         const name = c.name.toLowerCase() || "Category";
         const slug = slugify(name);

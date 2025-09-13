@@ -63,7 +63,6 @@ export default function Product() {
       </div>
 
       {/* GRID สินค้า */}
-      {/* ROW สินค้าแบบเลื่อนซ้าย–ขวา ทุกขนาดจอ */}
       <div className="relative">
         {/* ลูกศรซ้าย/ขวา (แสดงทุกขนาดจอ) */}
           <button
@@ -89,7 +88,7 @@ export default function Product() {
               key={p.id}
               className="
                 flex-shrink-0
-                basis-1/2 sm:basis-1/3 lg:basis-1/4
+                basis-1/1 sm:basis-1/2 lg:basis-1/4
                 rounded-xl bg-white shadow-sm hover:shadow-md transition overflow-hidden
               "
             >
