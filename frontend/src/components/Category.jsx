@@ -63,36 +63,63 @@ export default function Category() {
     );
   }
 
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4 py-6 max-w-7xl mx-auto">
+ return (
+  <div className="py-3 max-w-7xl mx-auto">
+    {/* มือถือ: แนวนอนเลื่อนได้ */}
+    <div className="flex md:hidden gap-3 overflow-x-auto no-scrollbar px-2 justify-items-center">
       {categories.map((c) => {
         const name = c.name.toLowerCase() || "Category";
         const slug = slugify(name);
         const icon = ICON_MAP[name] || "bx bx-category";
         const hasImage = Boolean(c.image_url);
-        const ringColor = "ring-gray-200";
-        const hoverRing = "hover:ring-gray-300";
-        const base =
-          "group cursor-pointer select-none rounded-2xl bg-white shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5";
 
         return (
           <button
             key={c.category_id ?? slug}
             onClick={() => navigate(`/categories/${slug}`)}
-            className={`${base} p-4 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-600`}
-            aria-label={`Go to ${name}`}
+            className="flex-shrink-0 text-center"
           >
-            <div
-              className={`mx-auto mb-2 grid place-items-center w-20 h-20 rounded-full ring-1 ${ringColor} ${hoverRing} bg-gray-50 overflow-hidden`}
-            >
+            <div className="mx-auto mb-1 grid place-items-center w-14 h-14 rounded-full ring-1 ring-gray-200 hover:ring-gray-300 bg-gray-50 overflow-hidden">
+              {hasImage ? (
+                <img
+                  src={c.image_url}
+                  alt={name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => (e.currentTarget.style.display = "none")}
+                />
+              ) : (
+                <i className={`${icon} text-xl text-gray-600`} />
+              )}
+            </div>
+            <div className="text-xs font-medium text-gray-800 capitalize truncate w-14">
+              {name}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+
+    {/* เดสก์ท็อป: grid แบบเดิม */}
+    <div className="hidden md:grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
+      {categories.map((c) => {
+        const name = c.name.toLowerCase() || "Category";
+        const slug = slugify(name);
+        const icon = ICON_MAP[name] || "bx bx-category";
+        const hasImage = Boolean(c.image_url);
+
+        return (
+          <button
+            key={c.category_id ?? slug}
+            onClick={() => navigate(`/categories/${slug}`)}
+            className="group p-4 rounded-2xl bg-white shadow-sm hover:shadow-md transition text-center"
+          >
+            <div className="mx-auto mb-2 grid place-items-center w-20 h-20 rounded-full ring-1 ring-gray-200 hover:ring-gray-300 bg-gray-50 overflow-hidden">
               {hasImage ? (
                 <img
                   src={c.image_url}
                   alt={name}
                   className="w-full h-full object-cover group-hover:scale-105 transition"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                  }}
+                  onError={(e) => (e.currentTarget.style.display = "none")}
                 />
               ) : (
                 <i className={`${icon} text-3xl text-gray-600`} />
@@ -105,5 +132,6 @@ export default function Category() {
         );
       })}
     </div>
-  );
+  </div>
+);
 }

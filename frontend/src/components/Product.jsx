@@ -1,5 +1,6 @@
 import { useState } from "react";
 import useProduct from "../hooks/useProduct";
+import useHorizontalScroll from "../hooks/useHorizontalScroll";
 
 const FALLBACK_IMG = "https://via.placeholder.com/400x300.png?text=No+Image";
 const formatPrice = (n) =>
@@ -9,6 +10,7 @@ const formatPrice = (n) =>
 
 export default function Product() {
   const { items, loading, error, count } = useProduct(); // ยังใช้ hook เดิม
+  const { scrollerRef, canLeft, canRight, scrollBy, onScroll } = useHorizontalScroll([items]);
   const [selected, setSelected] = useState(null);
   const [qty, setQty] = useState(1);
 
@@ -61,37 +63,74 @@ export default function Product() {
       </div>
 
       {/* GRID สินค้า */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {items.map((p) => (
-          <article
-            key={p.id}
-            className="rounded-xl bg-white shadow-sm hover:shadow-md transition overflow-hidden"
+      {/* ROW สินค้าแบบเลื่อนซ้าย–ขวา ทุกขนาดจอ */}
+      <div className="relative">
+        {/* ลูกศรซ้าย/ขวา (แสดงทุกขนาดจอ) */}
+          <button
+            type="button"
+            onClick={() => scrollBy("left")}
+            className={`flex items-center justify-center absolute left-2 top-1/2 -translate-y-1/2 z-10
+                        w-10 h-10 rounded-full bg-white shadow hover:bg-gray-50 transition
+                        ${canLeft ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+            aria-label="Scroll left"
+            aria-hidden={!canLeft}
           >
-            <button
-              className="block w-full aspect-[4/3] bg-gray-50"
-              onClick={() => openModal(p)}
-              aria-label={`Open ${p.name}`}
-            >
-              <img
-                src={p.image_url || FALLBACK_IMG}
-                alt={p.name}
-                className="w-full h-full object-cover"
-                onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
-              />
-            </button>
+            <i className="bx bx-chevron-left text-2xl" />
+          </button>
 
-            <div className="p-3">
-              <h3 className="line-clamp-1 font-medium">{p.name}</h3>
-              <div className="mt-1 flex items-baseline justify-between">
-                <span className="text-indigo-600 font-semibold">฿{formatPrice(p.price)}</span>
-                <span className="text-xs text-gray-500">
-                  {typeof p.stock === "number" ? `Stock: ${p.stock}` : null}
-                </span>
+          {/* แถวสินค้า */}
+          <div
+            ref={scrollerRef}
+            onScroll={onScroll}
+            className="flex gap-4 overflow-x-auto scroll-smooth no-scrollbar py-1 px-12"
+          >
+          {items.map((p) => (
+            <article
+              key={p.id}
+              className="
+                flex-shrink-0
+                basis-1/2 sm:basis-1/3 lg:basis-1/4
+                rounded-xl bg-white shadow-sm hover:shadow-md transition overflow-hidden
+              "
+            >
+              <button
+                className="block w-full"
+                onClick={() => openModal(p)}
+                aria-label={`Open ${p.name}`}
+              >
+                <img
+                  src={p.image_url || FALLBACK_IMG}
+                  alt={p.name}
+                  className="w-full h-44 sm:h-48 lg:h-56 object-cover"
+                  onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
+                />
+              </button>
+
+              <div className="p-3">
+                <h3 className="line-clamp-1 font-medium">{p.name}</h3>
+                <div className="mt-1 flex items-baseline justify-between">
+                  <span className="text-indigo-600 font-semibold">฿{formatPrice(p.price)}</span>
+                  <span className="text-xs text-gray-500">
+                    {typeof p.stock === "number" ? `Stock: ${p.stock}` : null}
+                  </span>
+                </div>
               </div>
-            </div>
-          </article>
-        ))}
+            </article>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => scrollBy("right")}
+          className={`flex items-center justify-center absolute right-2 top-1/2 -translate-y-1/2 z-10
+                      w-10 h-10 rounded-full bg-white shadow hover:bg-gray-50 transition
+                      ${canRight ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+          aria-label="Scroll right"
+          aria-hidden={!canRight}
+        >
+          <i className="bx bx-chevron-right text-2xl" />
+        </button>
       </div>
+
 
       {/* MODAL (ไม่มี description; เพิ่ม qty + Add to Cart) */}
       {selected && (
@@ -123,7 +162,7 @@ export default function Product() {
               </div>
 
               <div className="space-y-4">
-                <div className="text-2xl font-bold text-indigo-700">
+                <div className="text-2xl font-bold text-blue-600">
                   ฿{formatPrice(selected.price)}
                 </div>
                 {typeof selected.stock === "number" && (
@@ -169,7 +208,7 @@ export default function Product() {
                 <button
                   onClick={() => onAddToCart(selected, qty)}
                   disabled={typeof selected.stock === "number" && selected.stock < 1}
-                  className="w-full py-3 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 disabled:bg-gray-300"
+                  className="w-full py-3 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:bg-gray-300"
                 >
                   Add to Cart
                 </button>

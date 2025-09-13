@@ -37,6 +37,15 @@
   @apply bg-gray-600;
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE */
+  scrollbar-width: none;     /* Firefox */
+}
+
+
 .logo-color {
   color: #005d9d;
 }
