@@ -28,6 +28,46 @@ const getTotalPro = async () => {
   }
 };
 
+const getProByCategoryId = async (category_id) => {
+  const client = await postgres.connect();
+  try {
+    const result = await client.query(
+      `SELECT p.*, c.name AS category_name, c.slug AS category_slug
+       FROM products p
+       JOIN category c ON p.category_id = c.category_id
+       WHERE p.category_id = $1
+       ORDER BY p.product_id DESC`,
+      [category_id]
+    );
+    return result.rows;
+  } catch (err) {
+    console.error(`Error to get Products by category_id ${category_id}:`, err);
+    throw err;
+  } finally {
+    client.release();
+  }
+};
+
+const getProByCategorySlug = async (slug) => {
+  const client = await postgres.connect();
+  try {
+    const result = await client.query(
+      `SELECT p.*, c.name AS category_name, c.slug AS category_slug
+       FROM products p
+       JOIN category c ON p.category_id = c.category_id
+       WHERE c.slug = $1
+       ORDER BY p.product_id DESC`,
+      [slug.toLowerCase()]
+    );
+    return result.rows;
+  } catch (err) {
+    console.error(`Error to get Products by category_slug ${slug}:`, err);
+    throw err;
+  } finally {
+    client.release();
+  }
+};
+
 const getProById = async (product_id) => {
   const client = await postgres.connect();
   try {
@@ -139,5 +179,7 @@ export default {
   createPro,
   updatePro,
   deletePro,
-  getTotalPro
+  getTotalPro,
+  getProByCategoryId,
+  getProByCategorySlug
 };

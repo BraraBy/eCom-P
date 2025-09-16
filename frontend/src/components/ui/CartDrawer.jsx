@@ -147,7 +147,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
 
       <div
         ref={drawerRef}
-        className={`fixed top-0 -right-5 h-full w-80 max-w-full bg-white z-[100]
+        className={`fixed top-0 -right-0 h-full w-80 max-w-full bg-white z-[100]
                     transform transition-transform duration-300
                     ${isOpen ? "translate-x-0 shadow-lg" : "translate-x-[110%] shadow-none"}`}
       >

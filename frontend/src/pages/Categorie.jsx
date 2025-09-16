@@ -1,148 +1,259 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom"; // ⬅️ เพิ่ม useNavigate
 import { Navbar, Footer } from "../components";
 import { Menu, X } from "lucide-react";
+import useProduct from "../hooks/useProduct";
 
-const ProductSection = () => {
+const API = import.meta.env.VITE_API_URL || "http://localhost:4200";
+const slugify = (s = "") =>
+  String(s).toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+
+export default function Categorie() {
+  const { slug } = useParams();          // /categories/:slug
+  const navigate = useNavigate();        // ⬅️ ใช้เปลี่ยน URL
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [active, setActive] = useState("all");
+  const [loadingCats, setLoadingCats] = useState(true);
+  const [catErr, setCatErr] = useState("");
+  const [sort, setSort] = useState("recommended");
 
-    const [categorie, setCategories] = useState([]);
+  // โหลดหมวดจาก DB
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${API}/api/category`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
 
-    useEffect(() => {
-      fetch('http://localhost:4200/api/category')
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === "200" && Array.isArray(data.result)) {
-            setCategories(data.result);
+        if (data.status === "200" && Array.isArray(data.result)) {
+          const list = data.result.map((c) => ({
+            id: String(c.category_id),
+            name: c.name,
+            slug: slugify(c.name),
+          }));
+
+          // สร้าง array ที่รวม "All" ไว้ด้านหน้า แล้วตั้ง state ด้วย array นี้
+          const allList = [{ id: "all", name: "All", slug: "all" }, ...list];
+          setCategories(allList);
+
+          // ถ้ามี slug ใน URL ให้ค้นหาใน allList (รวม 'all') แล้วตั้ง active ให้ตรง
+          if (slug) {
+            const s = slugify(slug);
+            const match = allList.find((c) => c.slug === s);
+            setActive(match ? match.slug : "all");
+          } else {
+            setActive("all");
           }
-        })
-        .catch(err => {
-          console.error('Failed to fetch products:', err);
-        });
-    }, []);
+        } else {
+          setCatErr("No categories");
+        }
+      } catch (e) {
+        setCatErr(e.message || "Fetch categories failed");
+      } finally {
+        setLoadingCats(false);
+      }
+    })();
+  }, [slug]);
+
+  // ✅ ฟังก์ชันเลือกหมวด + อัปเดต URL
+  const handleSelectCategory = (cat) => {
+    setActive(cat.slug);
+    setSidebarOpen(false);
+    if (cat.slug === "all") {
+      navigate("/categories");                 // /categories
+    } else {
+      navigate(`/categories/${cat.slug}`);     // /categories/<slug>
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // เรียกสินค้า
+  const categoryParam = active === "all" ? undefined : active;
+  const { items, loading: loadingProducts, error: prodErr } = useProduct({
+    category: categoryParam,
+  });
+
+  // sort ฝั่ง client
+  const sortedItems = useMemo(() => {
+    if (!items) return [];
+    if (sort === "price-asc")  return [...items].sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+    if (sort === "price-desc") return [...items].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+    return items;
+  }, [items, sort]);
+
+  const chips = loadingCats ? new Array(6).fill(null) : categories;
 
   return (
-    <div className="bg-gray-100 min-h-screen w-full relative">
+    <div className="bg-gray-100 min-h-screen w-full">
       <Navbar />
 
-      {/* ☰ Toggle Button - Mobile only */}
-      <div className="lg:hidden flex justify-between items-center px-4 py-3 bg-white shadow">
-        <button onClick={() => setSidebarOpen(true)}>
-          <Menu size={24} />
+      {/* Mobile top bar */}
+      <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-white shadow">
+        <button aria-label="Open categories" onClick={() => setSidebarOpen(true)}>
+          <Menu size={22} />
         </button>
-        <p className="font-semibold text-gray-600">Categories</p>
+        <p className="font-semibold text-gray-700">Categories</p>
+        <div className="w-6" />
       </div>
 
-      {/* 🔳 Overlay & Sidebar (Mobile) */}
-      {sidebarOpen && (
-        <>
-          {/* Overlay */}
-          <div
-            className="fixed inset-0 bg-opacity-40 z-40"
-            onClick={() => setSidebarOpen(false)}
-          ></div>
+      {/* Overlay */}
+      <div
+        onClick={() => setSidebarOpen(false)}
+        className={`fixed inset-0 z-[100] bg-black/40 transition-opacity duration-300 ease-out 
+          ${sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+      />
 
-          {/* Sidebar */}
-          <div className="fixed top-0 left-0 w-64 h-full bg-white z-50 shadow-lg transform transition-transform duration-300 translate-x-0">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-lg font-semibold">Categories</h2>
-              <button onClick={() => setSidebarOpen(false)}>
-                <X size={24} />
-              </button>
-            </div>
-            <div className="p-4 space-y-4">
-              {categorie.map((category, index) => (
-                <a
-                  key={category.category_id || index}
-                  href="#"
-                  className="block font-medium hover:underline text-gray-600"
-                >
-                  {category.name}
-                </a>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* 💻 Main Content */}
-      <div className="container px-4 py-8 mx-auto">
-        <div className="lg:flex lg:-mx-2">
-          {/* Sidebar (Desktop only) */}
-        <div className="hidden lg:block space-y-3 lg:w-1/5 lg:px-2 lg:space-y-4">
-          {categorie.map((category, index) => (
-            <a
-              key={category.category_id || index}
-              href="#"
-              className="block font-medium hover:underline text-gray-600"
-            >
-              {category.name}
-            </a>
-          ))}
+      {/* Sidebar (mobile) */}
+      <aside
+        className={`fixed top-0 left-0 z-[101] h-dvh w-72 max-w-[85vw] bg-white shadow-xl
+          transition-[transform,opacity] duration-300 ease-out transform-gpu will-change-transform
+          ${sidebarOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"}`}
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b">
+          <h2 className="text-lg font-semibold">Categories</h2>
+          <button aria-label="Close" onClick={() => setSidebarOpen(false)}>
+            <X size={22} />
+          </button>
         </div>
+        <div className="p-4 space-y-2">
+          {loadingCats
+            ? new Array(6).fill(0).map((_, i) => (
+                <div key={i} className="h-9 rounded-lg bg-gray-100 animate-pulse" />
+              ))
+            : chips.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => handleSelectCategory(c)}    // ⬅️ ใช้ฟังก์ชันนี้
+                  className={`w-full text-left px-3 py-2 rounded-lg border transition ${
+                    String(active) === String(c.slug)
+                      ? "bg-gray-900 text-white border-gray-900"
+                      : "bg-white text-gray-700 hover:bg-gray-50 border-gray-200"
+                  }`}
+                >
+                  {c.name}
+                </button>
+              ))}
+          {catErr && <div className="mt-2 text-sm text-red-600">Error: {catErr}</div>}
+        </div>
+      </aside>
 
+      {/* Content */}
+      <main className="container mx-auto px-4 py-6">
+        <div className="lg:flex lg:gap-6">
+          {/* Desktop sidebar */}
+          <aside className="hidden lg:block lg:w-64 shrink-0">
+            <div className="sticky top-20 space-y-3">
+              <h3 className="px-2 text-sm font-semibold text-gray-600">Categories</h3>
+              <div className="flex flex-wrap gap-2">
+                {loadingCats
+                  ? new Array(8).fill(0).map((_, i) => (
+                      <div key={i} className="h-9 w-20 rounded-full bg-gray-100 animate-pulse" />
+                    ))
+                  : chips.map((c) => (
+                      <button
+                        key={c.slug}                                // <-- use slug as key for consistency
+                        onClick={() => handleSelectCategory(c)}
+                        className={`px-3 py-2 rounded-full border text-sm transition ${
+                          // <-- compare active to slug (was comparing to id) so UI & filtering stay in sync
+                          String(active) === String(c.slug)
+                            ? "bg-gray-900 text-white border-gray-900"
+                            : "bg-white text-gray-700 hover:bg-gray-50 border-gray-200"
+                        }`}
+                      >
+                        {c.name}
+                      </button>
+                    ))}
+              </div>
+            </div>
+          </aside>
 
-          <div className="mt-6 lg:mt-0 lg:px-2 lg:w-4/5">
-            <div className="flex items-center justify-between text-sm tracking-widest uppercase">
-              <p className="text-gray-500 ">6 Items</p>
-              <div className="flex items-center">
-                <p className="text-gray-500 ">Sort</p>
-                <select className="font-medium text-gray-700 bg-transparent focus:outline-none">
-                  <option value="#">Recommended</option>
-                  <option value="#">Size</option>
-                  <option value="#">Price</option>
+          {/* Products */}
+          <section className="flex-1">
+            <div className="flex items-center justify-between py-3">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold">Products</h2>
+                <span className="text-sm text-gray-500">
+                  ({loadingProducts ? "…" : sortedItems.length})
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <label htmlFor="sort" className="text-sm text-gray-500">Sort</label>
+                <select
+                  id="sort"
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  className="rounded-md border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:outline-none"
+                >
+                  <option value="recommended">Recommended</option>
+                  <option value="price-asc">Price (Low → High)</option>
+                  <option value="price-desc">Price (High → Low)</option>
                 </select>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-8 mt-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {[
-                {
-                  name: "Printed T-shirt",
-                  price: "$12.55",
-                  image:
-                    "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=634&q=80",
-                },
-                {
-                  name: "Slub jersey T-shirt",
-                  price: "$18.70",
-                  image:
-                    "https://images.unsplash.com/photo-1620799139507-2a76f79a2f4d?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=966&q=80",
-                },
-                {
-                  name: "T-shirt with a motif",
-                  price: "$16.55",
-                  image:
-                    "https://images.unsplash.com/photo-1603320409990-02d834987237?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80",
-                },
-                {
-                  name: "Art T-shirt",
-                  price: "$12.55",
-                  image:
-                    "https://images.unsplash.com/photo-1603320410149-db26b12d5c2b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=634&q=80",
-                },
-              ].map((product, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col items-center justify-center w-full max-w-lg mx-auto"
-                >
-                  <img
-                    className="object-cover w-full rounded-md h-72 xl:h-80"
-                    src={product.image}
-                    alt={product.name}
-                  />
-                  <h4 className="mt-2 text-lg font-medium text-gray-700">
-                    {product.name}
-                  </h4>
-                  <p className="text-blue-500">{product.price}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+            {/* Grid */}
+            {loadingProducts ? (
+              <div className="grid gap-4 mt-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+                {new Array(8).fill(0).map((_, i) => (
+                  <div key={i} className="h-60 rounded-2xl bg-gray-100 animate-pulse" />
+                ))}
+              </div>
+            ) : prodErr ? (
+              <div className="mt-6 rounded-md bg-red-50 text-red-600 px-3 py-2 text-sm">
+                Error: {prodErr}
+              </div>
+            ) : (
+              <div className="grid gap-4 mt-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+                {sortedItems.map((p) => (
+                  <article
+                    key={p.id}
+                    className="group rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition overflow-hidden"
+                  >
+                    <div className="aspect-[4/3] bg-gray-50 overflow-hidden">
+                      <img
+                        src={p.image_url || "https://via.placeholder.com/400x300.png?text=No+Image"}
+                        alt={p.name}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/400x300.png?text=No+Image")}
+                      />
+                    </div>
+                    <div className="p-3">
+                      <h4 className="text-sm font-medium text-gray-900 line-clamp-2 min-h-[40px]">
+                        {p.name}
+                      </h4>
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="text-indigo-600 font-semibold">
+                          ฿{Number(p.price ?? 0).toFixed(2)}
+                        </span>
+                        <button
+                          className="rounded-lg bg-gray-900 text-white px-3 py-2 text-xs hover:bg-black"
+                          onClick={() =>
+                            window.dispatchEvent(
+                              new CustomEvent("cart:add", { detail: { product: p, quantity: 1 } })
+                            )
+                          }
+                        >
+                          Add to Cart
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+
+            {!loadingProducts && !prodErr && sortedItems.length === 0 && (
+              <div className="py-16 text-center text-gray-500">No products found</div>
+            )}
+          </section>
         </div>
-      </div>
-      <div><Footer/></div>
+      </main>
+
+      <Footer />
     </div>
   );
-};
-
-export default ProductSection;
+}

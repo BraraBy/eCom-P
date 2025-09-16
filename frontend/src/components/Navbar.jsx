@@ -95,7 +95,7 @@ const Navbar = () => {
             )}
 
             {!isSearchOpen && (
-              <li ref={dropdownRef}>
+              <li ref={dropdownRef} className="relative">
                 <button
                   className="w-10 h-10 rounded-full overflow-hidden ring-1 ring-gray-200"
                   onClick={toggleDropdown}
@@ -111,7 +111,7 @@ const Navbar = () => {
                 </button>
 
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg p-2">
+                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg p-2 border border-gray-200">
                     {!user ? (
                       <button
                         onClick={() => navigate('/login')}
