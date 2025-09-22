@@ -23,10 +23,10 @@ rt.get('/totalUser', async (req, res) => {
 });
 
 // Get User by ID
-rt.get('/:id', async (req, res) => {
-  const { id } = req.params;
+rt.get('/:user_id', async (req, res) => {
+  const { user_id } = req.params;
   try {
-    const data = await Controller.getUserById(id);
+    const data = await Controller.getUserById(user_id);
     res.status(200).json({ status: '200', result: data });
   } catch (err) {
     res.status(500).json({ status: '500', result: 'Server Error' });
@@ -60,7 +60,7 @@ rt.post('/', async (req, res) => {
 
 
 // Update User
-rt.put('/:id', async (req, res) => {
+rt.put('/:user_id', async (req, res) => {
   const { user_id } = req.params;
   try {
     const info = await Controller.updateUser(user_id, req.body);
@@ -73,7 +73,7 @@ rt.put('/:id', async (req, res) => {
 });
 
 // Force delete User
-rt.delete('/:id', async (req, res) => {
+rt.delete('/:user_id', async (req, res) => {
     const { user_id } = req.params;
     if (!user_id) {
         res.status(400).json({ status:'400', result: 'ID is requires.'})

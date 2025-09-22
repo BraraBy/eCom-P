@@ -51,22 +51,48 @@ const SignInAndSignUp = () => {
                 onClick={() => setIsLoginPage(false)}
                 className="rounded-2xl border-b-2 border-b-gray-300 bg-white px-4 py-3 font-bold text-blue-500 ring-2 ring-gray-300 hover:bg-gray-200 active:translate-y-[0.125rem] active:border-b-gray-200"
               >
-                LOGIN
+                SIGN UP
               </button>
             ) : (
               <button
                 onClick={() => setIsLoginPage(true)}
                 className="rounded-2xl border-b-2 border-b-gray-300 bg-white px-4 py-3 font-bold text-blue-500 ring-2 ring-gray-300 hover:bg-gray-200 active:translate-y-[0.125rem] active:border-b-gray-200"
               >
-                SIGN UP
+                LOGIN
               </button>
             )}
           </div>
         </header>
 
         <div className="absolute left-1/2 top-1/2 mx-auto w-[400px] -translate-x-1/2 -translate-y-1/2 transform space-y-4 text-center">
-          {/* Sign Up */}
+          {/* Login */}
           {isLoginPage && (
+            <div className="space-y-4">
+              <header className="mb-3 text-2xl font-bold">Log in</header>
+              <form onSubmit={handleLogin} className='space-y-4'>
+                <InputBox
+                  placeholder="Email"
+                  type="email"
+                  value={loginEmail}
+                  onChange={e => setLoginEmail(e.target.value)}
+                  required
+                />
+                <InputBox
+                  placeholder="Password"
+                  type="password"
+                  value={loginPassword}
+                  onChange={e => setLoginPassword(e.target.value)}
+                  required
+                />
+                <button 
+                  type="submit" className="w-full rounded-2xl border-b-4 border-b-blue-600 bg-blue-500 py-3 font-bold text-white hover:bg-blue-400 active:translate-y-[0.125rem] active:border-b-blue-400"
+                >LOG IN</button>
+              </form>
+            </div>
+          )}
+
+          {/* SignIn */}
+          {!isLoginPage && (
             <form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
               <header className="mb-3 text-2xl font-bold">Create your profile</header>
 
@@ -164,38 +190,12 @@ const SignInAndSignUp = () => {
               />
 
               <button 
-                type="" 
+                type="submit" 
                 className="w-full rounded-2xl border-b-4 border-b-blue-600 bg-blue-500 py-3 font-bold text-white hover:bg-blue-400 active:translate-y-[0.125rem] active:border-b-blue-400"
               >
                 CREATE ACCOUNT
               </button>
             </form>
-          )}
-
-          {/* Login */}
-          {!isLoginPage && (
-            <div className="space-y-4">
-              <header className="mb-3 text-2xl font-bold">Log in</header>
-              <form onSubmit={handleLogin} className='space-y-4'>
-                <InputBox
-                  placeholder="Email"
-                  type="email"
-                  value={loginEmail}
-                  onChange={e => setLoginEmail(e.target.value)}
-                  required
-                />
-                <InputBox
-                  placeholder="Password"
-                  type="password"
-                  value={loginPassword}
-                  onChange={e => setLoginPassword(e.target.value)}
-                  required
-                />
-                <button 
-                  type="submit" className="w-full rounded-2xl border-b-4 border-b-blue-600 bg-blue-500 py-3 font-bold text-white hover:bg-blue-400 active:translate-y-[0.125rem] active:border-b-blue-400"
-                >LOG IN</button>
-              </form>
-            </div>
           )}
         </div>
       </div>

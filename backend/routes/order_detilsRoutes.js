@@ -12,7 +12,7 @@ rt.get('/', async (req, res) => {
   }
 });
 
-rt.get('/:id', async (req, res) => {
+rt.get('/:order_details_id', async (req, res) => {
   const { order_details_id } = req.params;
   try {
     const data = await Controller.getOddById(order_details_id);
@@ -39,7 +39,7 @@ rt.post('/', async (req, res) => {
     }
 });
 
-rt.put('/:id', async (req, res) => {
+rt.put('/:order_details_id', async (req, res) => {
   const { order_details_id } = req.params;
   try {
     const info = await Controller.updateOdd(order_details_id, req.body);
@@ -51,7 +51,7 @@ rt.put('/:id', async (req, res) => {
   }
 });
 
-rt.delete('/:id', async (req, res) => {
+rt.delete('/:order_details_id', async (req, res) => {
     const { order_details_id } = req.params;
     if (!order_details_id) {
         res.status(400).json({ status:'400', result: 'ID is requires.'})

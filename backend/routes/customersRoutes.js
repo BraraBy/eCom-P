@@ -91,7 +91,7 @@ rt.get('/totalCustomers', async (req, res) => {
   }
 });
 
-rt.get('/:id', async (req, res) => {
+rt.get('/:customers_id', async (req, res) => {
   const { customers_id } = req.params;
   try {
     const data = await Controller.getCusById(customers_id);
@@ -129,7 +129,7 @@ rt.post('/', upload.none(), async (req, res) => {
 });
 
 
-rt.put('/:id', async (req, res) => {
+rt.put('/:customers_id', async (req, res) => {
   const { customers_id } = req.params;
   try {
     const info = await Controller.updateCus(customers_id, req.body);
@@ -141,7 +141,7 @@ rt.put('/:id', async (req, res) => {
   }
 });
 
-rt.delete('/:id', async (req, res) => {
+rt.delete('/:customers_id', async (req, res) => {
     const { customers_id } = req.params;
     if (!customers_id) {
         res.status(400).json({ status:'400', result: 'ID is requires.'})

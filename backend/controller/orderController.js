@@ -15,6 +15,35 @@ const getAllOrd = async () => {
   }
 };
 
+const getAllOrdByCustomer = async (customers_id) => {
+  const client = await postgres.connect();
+  try {
+    const sql = `
+      SELECT
+        o.order_id,
+        o.customer_id,
+        o.order_date,
+        o.total_amount,
+        o.status,
+        COALESCE(SUM(od.quantity * od.price), 0) AS subtotal,
+        COUNT(od.order_detail_id) AS item_count
+      FROM orders o
+      LEFT JOIN order_details od ON od.order_id = o.order_id
+      WHERE o.customer_id = $1
+      GROUP BY
+        o.order_id, o.customer_id, o.order_date, o.total_amount, o.status
+      ORDER BY o.order_date DESC, o.order_id DESC
+    `;
+    const r = await client.query(sql, [customers_id]);
+    return r.rows;
+  } catch (err) {
+    console.error(`Error to get orders for customer ${customers_id}:`, err);
+    throw err;
+  } finally {
+    client.release();
+  }
+};
+
 const getTotalOrd = async () => {
   const client = await postgres.connect();
   try {
@@ -41,6 +70,54 @@ const getOrdById = async (order_id) => {
   }
 };
 
+const createOrd = async (customers_id, total_amount) => {
+  const client = await postgres.connect();
+  try {
+    const result = await client.query(
+      `INSERT INTO orders (customer_id, total_amount, status)
+       VALUES ($1, $2, 'COMPLETED')
+       RETURNING *`,
+      [customers_id, total_amount]
+    );
+    return result.rows[0]; // return order ที่เพิ่งสร้าง
+  } catch (err) {
+    console.error("Error creating order:", err);
+    throw err;
+  } finally {
+    client.release();
+  }
+};
+
+const getItemsByOrderForCustomer = async (order_id, customers_id) => {
+  const client = await postgres.connect();
+  try {
+    const sql = `
+      SELECT
+        od.order_detail_id,
+        od.order_id,
+        od.product_id,
+        p.name AS product_name,
+        p.image_url AS image_url,
+        od.quantity,
+        od.price,
+        (od.quantity * od.price) AS line_total
+      FROM order_details od
+      JOIN orders o ON o.order_id = od.order_id
+      LEFT JOIN products p ON p.product_id = od.product_id
+      WHERE od.order_id = $1
+        AND o.customer_id = $2
+      ORDER BY od.order_detail_id ASC
+    `;
+    const r = await client.query(sql, [order_id, customers_id]);
+    return r.rows;
+  } catch (err) {
+    console.error(`Error to get items for order ${order_id}:`, err);
+    throw err;
+  } finally {
+    client.release();
+  }
+};
+
 const deleteOrd = async (order_id) => {
   const client = await postgres.connect();
   try {
@@ -61,5 +138,8 @@ export default {
   getAllOrd,
   getOrdById,
   deleteOrd,
-  getTotalOrd
+  getTotalOrd,
+  getAllOrdByCustomer,
+  createOrd,
+  getItemsByOrderForCustomer
 };
