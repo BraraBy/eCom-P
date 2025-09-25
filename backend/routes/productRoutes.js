@@ -1,5 +1,6 @@
 import express from 'express';
 import Controller from '../controller/productController.js';
+import { upload, uploadFile } from '../utils/uploadImage.js';
 
 const rt = express.Router();
 
@@ -45,42 +46,120 @@ rt.get('/:product_id', async (req, res) => {
 });
 
 rt.post('/', async (req, res) => {
-  const info = {
-    name: req.body.name,
-    price: req.body.price,
-    stock: req.body.stock,
-    image_url: req.body.image_url,
-    category_id: req.body.category_id,
-  };
-
-  if (!info.name) {
-    return res.status(400).json({ status: '400', message: 'Product name are required.' });
-  }
-
   try {
-    const Check = await Controller.checkProName(info.name);
-
-    if (Check) {
-      return res.status(400).json({ status: '400', message: 'Already exists' });
+    const { name, price, stock, image_url, category_id } = req.body || {};
+    if (!name?.trim()) {
+      return res.status(400).json({ 
+        status: '400', 
+        message: 'Product name is required' 
+      });
     }
 
-    const checkedPro = await Controller.createPro(info);
-    return res.status(201).json({ status: '201', result: checkedPro});
+    try {
+      const created = await Controller.createPro({
+        name: name.trim(),
+        price: Number(price || 0),
+        stock: Number(stock || 0),
+        image_url: image_url || null,
+        category_id: category_id ? Number(category_id) : null,
+      });
+
+      res.status(201).json({ 
+        status: '201', 
+        result: created 
+      });
+    } catch (err) {
+      if (err.message === 'Product name already exists') {
+        return res.status(400).json({
+          status: '400',
+          message: 'Product name already exists'
+        });
+      }
+      throw err;
+    }
   } catch (err) {
-    console.error('Error Adding Product:', err);
-    return res.status(500).json({ status: '500', message: 'Server Error' });
+    console.error('POST /api/products error:', err);
+    res.status(500).json({ 
+      status: '500', 
+      message: 'Server Error' 
+    });
   }
 });
 
 rt.put('/:product_id', async (req, res) => {
-  const { product_id } = req.params;
   try {
-    const info = await Controller.updatePro(product_id, req.body);
-    console.log(product_id, req.body);
+    const id = Number(req.params.product_id);
+    const { name, price, stock, image_url, category_id } = req.body || {};
+    const updated = await Controller.updatePro(id, {
+      name: name ?? undefined,
+      price: price !== undefined ? Number(price) : undefined,
+      stock: stock !== undefined ? Number(stock) : undefined,
+      image_url: image_url ?? undefined,
+      category_id: category_id ? Number(category_id) : undefined,
+    });
+    res.json({ status: '200', result: updated });
+  } catch (e) {
+    console.error('PUT /api/products error:', e);
+    res.status(500).json({ status: '500', message: e.message || 'Server Error' });
+  }
+});
 
-    res.status(200).json({ status: '200', result: info });
-  } catch (err) {
-    res.status(500).json({ status: '500', result: 'Server Error' });
+// Add this route for Firebase upload
+rt.post('/upload-firebase', upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ 
+        status: '400', 
+        message: 'No file uploaded' 
+      });
+    }
+
+    const { product_id } = req.body;
+    if (!product_id) {
+      return res.status(400).json({ 
+        status: '400', 
+        message: 'Product ID is required' 
+      });
+    }
+
+    const dateTime = giveCurrentDateTime();
+    const storageRef = ref(storage, `products/${req.file.originalname}_${dateTime}`);
+
+    const metadata = {
+      contentType: req.file.mimetype,
+    };
+
+    const snapshot = await uploadBytesResumable(
+      storageRef, 
+      req.file.buffer, 
+      metadata
+    );
+
+    const downloadURL = await getDownloadURL(snapshot.ref);
+
+    // Update product with new image URL
+    const client = await postgres.connect();
+    try {
+      await client.query(
+        'UPDATE products SET image_url = $1 WHERE product_id = $2',
+        [downloadURL, product_id]
+      );
+    } finally {
+      client.release();
+    }
+
+    res.status(200).json({
+      status: '200',
+      message: 'File uploaded successfully',
+      downloadURL
+    });
+    
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    res.status(500).json({ 
+      status: '500', 
+      message: 'File upload failed' 
+    });
   }
 });
 

@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt.js';
 import Controller from '../controller/customersController.js';
+import postgres from '../utils/db.js';
 
 // firebase upload
 import { upload, uploadFile } from '../utils/uploadImage.js';
@@ -30,6 +31,14 @@ rt.post('/login', async (req, res) => {
       return res.status(401).json({ status: '401', message: 'Invalid email or password' });
     }
 
+    const roleRes = await postgres.query(
+      'SELECT rolename FROM role WHERE role_id = $1',
+      [user.role_id]
+    );
+    const rolename = roleRes.rows[0]?.rolename || 'customer';
+    user.rolename = rolename;
+
+
     // ไม่ส่ง password กลับ
     delete user.password;
 
@@ -37,7 +46,7 @@ rt.post('/login', async (req, res) => {
     const accessToken = signAccessToken({
       customers_id: user.customers_id,
       email: user.email,
-      role: user.role_id
+      role: rolename,
     });
 
     // (ตัวเลือก) refresh token

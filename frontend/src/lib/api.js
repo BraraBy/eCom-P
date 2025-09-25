@@ -6,11 +6,12 @@ function getAuthHeader() {
 }
 
 export async function apiFetch(path, options = {}) {
+  const isForm = options?.body instanceof FormData;
   const res = await fetch(`${API_URL}${path}`, {
     credentials: 'omit',
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      ...(isForm ? {} : { 'Content-Type': 'application/json' }),
       ...(options.headers || {}),
       ...getAuthHeader(),
     },

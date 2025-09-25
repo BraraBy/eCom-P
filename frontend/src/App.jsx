@@ -5,6 +5,7 @@ import Categorie  from './pages/Categorie';
 import Profile from './pages/Profile';
 import CheckOut from './pages/CheckOut';
 import OrderHistory from './pages/OrderHistory';
+import Management from './pages/managementShop';
 
 function App() {
   return (
@@ -13,9 +14,10 @@ function App() {
         <Route path='/profile' element={<Profile />} />
         <Route path="/login" element={<Login />} />
         <Route path="/checkout" element={<CheckOut />} />
-        <Route path="/orders" element={<OrderHistory />} />
+        <Route path="/order_history" element={<OrderHistory />} />
         <Route path="/categories" element={<Categorie />} />
         <Route path="/categories/:slug" element={<Categorie />} />
+        <Route path="/management" element={<Management/>} />
       </Routes>
   )
 }

@@ -5,7 +5,12 @@ let result = '';
 const getAllPro = async () => {
   const client = await postgres.connect();
   try {
-    result = await client.query('SELECT * FROM products');
+    result = await client.query(`
+      SELECT p.*, c.name as category_name 
+      FROM products p
+      LEFT JOIN category c ON p.category_id = c.category_id
+      ORDER BY p.product_id DESC
+    `);
     return result.rows;
   } catch (err) {
     console.error('Error to get all Product :', err);
@@ -95,64 +100,82 @@ const getProByName = async (data) => {
   }
 };
 
-const checkProName = async (data) => {
+// Fix the checkProName function
+const checkProName = async (name) => {
   const client = await postgres.connect();
-  const { name } = data;
   try {
     const result = await client.query(
-      'SELECT * FROM products WHERE product_id = $1 ;',
+      'SELECT * FROM products WHERE name = $1',
       [name]
     );
     return result.rows.length > 0;
   } catch (err) {
-    console.error('Error checking for duplicate Products Name :', err);
+    console.error('Error checking for duplicate Products Name:', err);
     throw err;
   } finally {
     client.release();
   }
 };
 
-// Create new customers
-const createPro = async (data) => {
-    const { name, price, stock, image_url,category_id } = data;
-    const client = await postgres.connect();
-    try {
-      const result = await client.query(
-          `INSERT INTO products ( name, price, stock, image_url, category_id)
-               VALUES ($1, $2, $3, $4, $5)
-               RETURNING *;`,
-          [ name, price, stock, image_url,category_id]
-      );
-      return result.rows;
-    } catch (err) {
-      console.error('Error to add new Products :', err);
-      throw err;
-    } finally {
-      client.release();
+// Create new product
+const createPro = async ({ name, price = 0, stock = 0, image_url = null, category_id = null }) => {
+  const client = await postgres.connect();
+  try {
+    // Check for duplicate name first
+    const checkResult = await client.query(
+      'SELECT product_id FROM products WHERE name = $1',
+      [name]
+    );
+    if (checkResult.rows.length > 0) {
+      throw new Error('Product name already exists');
     }
-  };
 
-// Update customers
-const updatePro = async (product_id, data) => {
-    const { name, price, stock, image_url,category_id } = data;
-    const client = await postgres.connect();
-    try { 
-      const result = await client.query(
-          `UPDATE products
-               SET name = $1, price = $2, stock = $3, image_url = $4, category_id = $5
-               WHERE product_id = $6
-               RETURNING *;`,
-          [name, price, stock, image_url,category_id, product_id]
-      );
-      
-      return result.rows;
-    } catch (err) {
-      console.error(`Error updating Products at ID ${product_id}:`, err);
-      throw err;
-    } finally {
-      client.release();
+    const result = await client.query(
+      `INSERT INTO products (name, price, stock, image_url, category_id)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [name, price, stock, image_url, category_id]
+    );
+    return result.rows[0];
+  } catch (err) {
+    if (err.code === '23505') { // PostgreSQL unique violation code
+      throw new Error('Product name already exists');
     }
-  };
+    throw err;
+  } finally {
+    client.release();
+  }
+};
+
+const updatePro = async (product_id, data) => {
+  const client = await postgres.connect();
+  try {
+    const r = await client.query(
+      `UPDATE products
+         SET name        = COALESCE($1, name),
+             price       = COALESCE($2, price),
+             stock       = COALESCE($3, stock),
+             image_url   = COALESCE($4, image_url),
+             category_id = COALESCE($5, category_id)
+       WHERE product_id = $6
+       RETURNING product_id, name, price, stock, image_url, category_id`,
+      [
+        data.name !== undefined ? String(data.name).trim() : undefined,
+        data.price !== undefined ? Number(data.price) : undefined,
+        data.stock !== undefined ? Number(data.stock) : undefined,
+        data.image_url !== undefined ? (data.image_url || null) : undefined,
+        data.category_id !== undefined
+          ? (data.category_id === '' ? null : Number(data.category_id))
+          : undefined,
+        Number(product_id),
+      ]
+    );
+    return r.rows[0];
+  } catch (err) {
+    throw new Error(err?.message || 'DB error');
+  } finally { client.release(); }
+};
+
 
 // Force Delete Prefix record.
 const deletePro = async (product_id) => {
