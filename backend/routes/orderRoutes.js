@@ -72,8 +72,6 @@ rt.post("/", requireAuth, async (req, res) => {
     res.status(500).json({ status: "500", result: "Server Error" });
   }
 });
-
-
 rt.delete('/:order_id', async (req, res) => {
     const { order_id } = req.params;
     if (!order_id) {

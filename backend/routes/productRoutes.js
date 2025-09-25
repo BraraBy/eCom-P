@@ -87,6 +87,7 @@ rt.post('/', async (req, res) => {
 });
 
 rt.put('/:product_id', async (req, res) => {
+  const { product_id } = req.params;
   try {
     const id = Number(req.params.product_id);
     const { name, price, stock, image_url, category_id } = req.body || {};

@@ -1,7 +1,8 @@
-// src/hooks/useInfo.jsx
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../api/auth'; // ✅ เพิ่มมาใช้ฟังก์ชัน login() ที่เซฟ token ให้ครบ
+
+const API = import.meta.env.VITE_API_URL || "http://localhost:4200";
 
 export function useInfo () {
   const [avatar, setAvatar] = useState("https://cdn-icons-png.flaticon.com/512/149/149071.png");
@@ -11,6 +12,8 @@ export function useInfo () {
   const avatarInputRef = useRef(null);
   const coverInputRef = useRef(null);
   const profileImageInputRef = useRef(null);
+  const [avatar, setAvatar] = useState("https://cdn-icons-png.flaticon.com/512/149/149071.png");
+  const [profileImage, setProfileImage] = useState(null); // สำหรับฟอร์มอัปโหลด
 
   const handleImageChange = (e, setImage) => {
     const file = e.target.files[0];
@@ -152,11 +155,11 @@ export function useInfo () {
       alert('upload image ล้มเหลว: ' + err.message);
     }
   };
+    const [isLoginPage, setIsLoginPage] = useState(true);
+    const [accountType, setAccountType] = useState('client');
+    const fileInputRef = useRef(null);
 
-  // UI profile modal
-  const [isLoginPage, setIsLoginPage] = useState(true);
-  const fileInputRef = useRef(null);
-  const handleClose = () => navigate('/');
+    const navigate = useNavigate();
 
   // ฟอร์มล็อกอิน
   const [loginEmail, setLoginEmail] = useState('');
@@ -175,13 +178,119 @@ export function useInfo () {
     } catch (err) {
       alert(err.message || 'Login failed');
     }
-  };
+    //Login Form
+
+    const [loginEmail, setLoginEmail] = useState('');
+    const [loginPassword, setLoginPassword] = useState('');
+
+    const handleLogin = async (e) => {
+      e.preventDefault();
+      try {
+        const res = await fetch('http://localhost:4200/api/customers/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const user = data.result?.user || data.user || null;
+          if (user) {
+            localStorage.setItem('user', JSON.stringify(user));
+            window.dispatchEvent(new Event('auth:changed')); // ให้ Navbar รู้ว่ามี user ใหม่
+          }
+          alert('Login successful!');
+          navigate('/');
+        } else {
+          alert(data.message || 'Login failed');
+        }
+      } catch (err) {
+        alert('Server error');
+      }
+    };
+
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
+    const fetchProfile = useCallback(async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
+        if (!userLocal?.customers_id) throw new Error("No local user");
+
+        const res = await fetch(`${API}/api/customers/${userLocal.customers_id}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const u = data?.result?.[0] || {};
+
+        // สรุปข้อมูลลง form data และรูปโปรไฟล์
+        setFormData(prev => ({ ...prev, ...u }));
+        if (u.image_profile) {
+          setAvatar(u.image_profile);
+          setProfileImage(u.image_profile);
+        }
+      } catch (e) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    }, [API, setFormData]);
+
+    const updateProfile = async () => {
+      try {
+        const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
+        const customers_id = userLocal?.customers_id || formData.customers_id;
+        if (!customers_id) throw new Error("Missing customers_id");
+
+        // ถ้ามีไฟล์ใหม่ให้อัปโหลดก่อน (profileImageInputRef)
+        let uploadedUrl = null;
+        const file = profileImageInputRef.current?.files?.[0];
+        if (file) {
+          const fm = new FormData();
+          fm.append('customer_id', customers_id);
+          fm.append('image', file);
+
+          const upRes = await fetch(`${API}/api/customers/upload-firebase`, {
+            method: 'POST',
+            body: fm,
+          });
+          if (!upRes.ok) throw new Error(`Upload failed ${upRes.status}`);
+          const upJson = await upRes.json();
+          // backend อาจคืนชื่อฟิลด์ต่างกัน: downloadURL | imageUrl
+          uploadedUrl = upJson.downloadURL || upJson.imageUrl || upJson.url || null;
+        }
+
+        // เตรียม payload (รวม customers_id + image_profile ถ้ามี)
+        const payload = { ...formData, customers_id };
+        if (uploadedUrl) payload.image_profile = uploadedUrl;
+
+        const res = await fetch(`${API}/api/customers/update-profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        // เก็บ user ใหม่ลง localStorage (backend คืน object เดียว)
+        const newUser = data.result || data.user || payload;
+        localStorage.setItem('user', JSON.stringify(newUser));
+        window.dispatchEvent(new Event('auth:changed'));
+        // ถ้ามี url ใหม่ อัปเดตรูปใน state
+        if (newUser.image_profile) {
+          setAvatar(newUser.image_profile);
+          setProfileImage(newUser.image_profile);
+        }
+        return true;
+      } catch (e) {
+        setError(e.message);
+        return false;
+      }
+    };
 
   return {
     avatar,
     setAvatar,
-    cover,
-    setCover,
     avatarInputRef,
     coverInputRef,
     handleImageChange,
@@ -211,5 +320,9 @@ export function useInfo () {
     loginPassword,
     setLoginPassword,
     fileInputRef,
+    fetchProfile,
+    updateProfile,
+    loading,
+    error,
   };
 }
