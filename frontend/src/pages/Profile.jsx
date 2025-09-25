@@ -1,220 +1,166 @@
-import { useInfo } from "../hooks/useInfo";
-import { Navbar, Footer } from "../components";
+// src/pages/Profile.jsx
+import useProfile from "../hooks/useProfile";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
-const ProfileForm = () => {
+const Field = ({ label, value }) => (
+  <div className="space-y-1">
+    <p className="text-xs text-gray-500">{label}</p>
+    <p className="text-sm font-medium text-gray-900">{value || "—"}</p>
+  </div>
+);
+
+export default function Profile() {
   const {
-    avatar,
-    setAvatar,
-    cover,
-    setCover,
-    avatarInputRef,
-    coverInputRef,
-    handleImageChange,
-    formData,
-    setFormData,
-    handleChange,
-    handleSubmit
-  } = useInfo();
+    formData, onChange, loading, saving, error,
+    tab, setTab, updateProfile, reset, uploadAvatar,
+  } = useProfile();
 
   return (
-    <form onSubmit={handleSubmit} className="bg-gray-100 min-h-screen">
+    <div className="bg-gray-100 min-h-screen w-full">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        {/* Profile Header */}
-        <div className="border-b border-gray-300 py-5">
-          <div className="flex items-center">
-            <p className="text-lg font-bold text-gray-800">Profile</p>
+    <div className="container mx-auto px-4 py-6">
+      <div className="rounded-2xl overflow-hidden shadow-sm bg-white">
+        <div className="h-28 bg-[#153a63]" />
+        <div className="flex items-end justify-between p-4">
+          <div className="flex items-center gap-4 -mt-10">
+            <div className="relative">
+              <img
+                src={formData.image_profile || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                className="w-20 h-20 rounded-full ring-4 ring-white object-cover"
+              />
+              <label className="absolute -bottom-1 right-0 bg-white rounded-full text-xs px-2 py-1 shadow cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) await uploadAvatar(file);
+                  }}
+                />
+                Change
+              </label>
+            </div>
+            <div className="mt-5">
+              <p className="text-lg font-semibold">{formData.name || "—"}</p>
+              <p className="text-sm text-gray-500">{formData.email || "—"}</p>
+            </div>
           </div>
-        </div>
 
-        {/* Cover + Avatar Container */}
-        <div className="relative mt-8">
-        {/* Cover Photo */}
-        <img
-            src={cover}
-            alt="Cover"
-            className="w-full h-48 object-cover rounded"
-        />
-
-        {/* Upload button (hidden input + overlay) */}
-        <input
-            type="file"
-            accept="image/*"
-            ref={coverInputRef}
-            className="hidden"
-            onChange={(e) => handleImageChange(e, setCover)}
-        />
-        <button
-            type="button"
-            onClick={() => coverInputRef.current.click()}
-            className="absolute right-4 top-4 bg-black bg-opacity-50 text-white px-3 py-1 text-xs rounded hover:bg-opacity-70"
-        >
-            Change Cover
-        </button>
-
-        {/* Avatar */}
-        <div
-            className="absolute left-6 -bottom-10 w-20 h-20 rounded-full border-4 border-white bg-white shadow-md overflow-hidden cursor-pointer"
-            onClick={() => avatarInputRef.current.click()}
-        >
-            <img
-            src={avatar}
-            alt="Avatar"
-            className="w-full h-full object-cover"
-            />
-        </div>
-        <input
-            type="file"
-            accept="image/*"
-            ref={avatarInputRef}
-            className="hidden"
-            onChange={(e) => handleImageChange(e, setAvatar)}
-        />
-        </div>
-
-        {/* Main Form */}
-        <div className="pt-16 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          <div>
-            <label htmlFor="username" className="block text-sm font-bold text-gray-800">Username</label>
-            <input
-              type="text"
-              name="username"
-              id="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-              className="w-full mt-1 border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
-            />
+          <div className="flex gap-2">
+            <button
+              className={`px-4 py-2 rounded-lg text-sm ${tab === "overview" ? "bg-gray-900 text-white" : "bg-gray-100"}`}
+              onClick={() => setTab("overview")}
+            >
+              Overview
+            </button>
+            <button
+              className={`px-4 py-2 rounded-lg text-sm ${tab === "edit" ? "bg-gray-900 text-white" : "bg-gray-100"}`}
+              onClick={() => setTab("edit")}
+            >
+              Edit
+            </button>
           </div>
-          <div>
-            <label htmlFor="firstName" className="block text-sm font-bold text-gray-800">First Name</label>
-            <input
-              type="text"
-              name="firstName"
-              id="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
-            />
-          </div>
-          <div>
-            <label htmlFor="lastName" className="block text-sm font-bold text-gray-800">Last Name</label>
-            <input
-              type="text"
-              name="lastName"
-              id="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
-            />
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-bold text-gray-800">Email</label>
-            <input
-              type="email"
-              name="email"
-              id="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
-            />
-          </div>
-           <div>
-            <label htmlFor="Address" className="block text-sm font-bold text-gray-800">Address</label>
-            <input
-              type="text"
-              name="Address"
-              id="Address"
-              value={formData.Address}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
-            />
-          </div>
-          <div>
-            <label htmlFor="streetAddress" className="block text-sm font-bold text-gray-800">Street Address</label>
-            <input
-              type="text"
-              name="streetAddress"
-              id="streetAddress"
-              value={formData.streetAddress}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
-            />
-          </div>
-          <div>
-            <label htmlFor="city" className="block text-sm font-bold text-gray-800">City</label>
-            <input
-              type="text"
-              name="city"
-              id="city"
-              value={formData.city}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
-            />
-          </div>
-          <div>
-            <label htmlFor="state" className="block text-sm font-bold text-gray-800">State/Province</label>
-            <input
-              type="text"
-              name="state"
-              id="state"
-              value={formData.state}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
-            />
-          </div>
-          <div>
-            <label htmlFor="country" className="block text-sm font-bold text-gray-800">Country</label>
-            <input
-              type="text"
-              name="country"
-              id="country"
-              value={formData.country}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
-            />
-          </div>
-          <div>
-            <label htmlFor="zip" className="block text-sm font-bold text-gray-800">ZIP/Postal Code</label>
-            <input
-              type="text"
-              name="zip"
-              id="zip"
-              value={formData.zip}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 px-3 py-2 rounded shadow-sm text-sm text-gray-600 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-900"
-            />
-          </div>
-        </div>
-
-        {/* Buttons */}
-        <div className="max-w-4xl mx-auto py-6 flex justify-end gap-4">
-          <button
-            type="button"
-            className="bg-gray-200 text-blue-900 px-6 py-2 text-sm rounded hover:bg-gray-300 focus:ring-2 focus:ring-offset-2 focus:ring-blue-900"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="bg-blue-900 text-white px-8 py-2 text-sm rounded hover:bg-blue-800 focus:ring-2 focus:ring-offset-2 focus:ring-blue-900"
-          >
-            Save
-          </button>
         </div>
       </div>
-      <Footer />
-    </form>
-  );
-};
 
-export default ProfileForm;
+      {/* Error / Loading */}
+      {error && <div className="mt-4 rounded-lg bg-red-50 text-red-600 px-3 py-2 text-sm">{error}</div>}
+      {loading && <div className="mt-4 text-sm text-gray-500">Loading…</div>}
+
+      {/* Body */}
+      {tab === "overview" ? (
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          <div className="rounded-2xl bg-white shadow-sm p-5">
+            <p className="font-semibold mb-4">Account</p>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Name" value={formData.name} />
+              <Field label="Email" value={formData.email} />
+              <Field label="Phone" value={formData.phone} />
+              <Field label="Username" value={formData.username} />
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-white shadow-sm p-5">
+            <p className="font-semibold mb-4">Address</p>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Address" value={formData.address} />
+              <Field label="Street" value={formData.street} />
+              <Field label="City" value={formData.city} />
+              <Field label="State" value={formData.state} />
+              <Field label="Country" value={formData.country} />
+              <Field label="ZIP" value={formData.zip} />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <form
+          className="mt-6 grid gap-6 md:grid-cols-2"
+          onSubmit={(e) => { e.preventDefault(); updateProfile(); }}
+        >
+          <div className="rounded-2xl bg-white shadow-sm p-5 space-y-4">
+            <p className="font-semibold">Account</p>
+            <div>
+              <label className="text-xs text-gray-500">Name</label>
+              <input className="mt-1 w-full rounded-md border px-3 py-2" value={formData.name} onChange={onChange("name")} />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500">Email</label>
+              <input className="mt-1 w-full rounded-md border px-3 py-2" value={formData.email} onChange={onChange("email")} />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500">Phone</label>
+              <input className="mt-1 w-full rounded-md border px-3 py-2" value={formData.phone} onChange={onChange("phone")} />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500">Username</label>
+              <input className="mt-1 w-full rounded-md border px-3 py-2" value={formData.username} onChange={onChange("username")} />
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-white shadow-sm p-5 space-y-4">
+            <p className="font-semibold">Address</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2">
+                <label className="text-xs text-gray-500">Address</label>
+                <input className="mt-1 w-full rounded-md border px-3 py-2" value={formData.address} onChange={onChange("address")} />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Street</label>
+                <input className="mt-1 w-full rounded-md border px-3 py-2" value={formData.street} onChange={onChange("street")} />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">City</label>
+                <input className="mt-1 w-full rounded-md border px-3 py-2" value={formData.city} onChange={onChange("city")} />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">State</label>
+                <input className="mt-1 w-full rounded-md border px-3 py-2" value={formData.state} onChange={onChange("state")} />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Country</label>
+                <input className="mt-1 w-full rounded-md border px-3 py-2" value={formData.country} onChange={onChange("country")} />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">ZIP</label>
+                <input className="mt-1 w-full rounded-md border px-3 py-2" value={formData.zip} onChange={onChange("zip")} />
+              </div>
+            </div>
+          </div>
+
+          <div className="md:col-span-2 flex justify-end gap-2">
+            <button type="button" onClick={reset} className="px-4 py-2 rounded-lg bg-gray-100">
+              Reset
+            </button>
+            <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg bg-gray-900 text-white disabled:opacity-60">
+              {saving ? "Saving…" : "Save changes"}
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+      <Footer />
+    </div>
+  );
+}

@@ -34,7 +34,7 @@ rt.get('/totalProducts', async (req, res) => {
   }
 });
 
-rt.get('/:id', async (req, res) => {
+rt.get('/:product_id', async (req, res) => {
   const { product_id } = req.params;
   try {
     const data = await Controller.getProById(product_id);
@@ -72,7 +72,7 @@ rt.post('/', async (req, res) => {
   }
 });
 
-rt.put('/:id', async (req, res) => {
+rt.put('/:product_id', async (req, res) => {
   const { product_id } = req.params;
   try {
     const info = await Controller.updatePro(product_id, req.body);
@@ -84,7 +84,7 @@ rt.put('/:id', async (req, res) => {
   }
 });
 
-rt.delete('/:id', async (req, res) => {
+rt.delete('/:product_id', async (req, res) => {
   const { product_id } = req.params;
   if (!product_id) {
     res.status(400).json({ status:'400', result: 'ID is requires.'})

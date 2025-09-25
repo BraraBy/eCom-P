@@ -21,7 +21,7 @@ rt.get('/totalCategory', async (req, res) => {
   }
 });
 
-rt.get('/:id', async (req, res) => {
+rt.get('/:category_id', async (req, res) => {
   const { category_id } = req.params;
   try {
     const data = await Controller.getCateById(category_id);
@@ -45,7 +45,7 @@ rt.post('/', async (req, res) => {
     }
 });
 
-rt.put('/:id', async (req, res) => {
+rt.put('/:category_id', async (req, res) => {
   const { category_id } = req.params;
   try {
     const info = await Controller.updateCate(category_id, req.body);
@@ -57,7 +57,7 @@ rt.put('/:id', async (req, res) => {
   }
 });
 
-rt.delete('/:id', async (req, res) => {
+rt.delete('/:category_id', async (req, res) => {
     const { category_id } = req.params;
     if (!category_id) {
         res.status(400).json({ status:'400', result: 'ID is requires.'})

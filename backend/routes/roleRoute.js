@@ -26,7 +26,7 @@ rt.post('/', async (req, res) => {
     }
 });
 
-rt.put('/:id', async (req, res) => {
+rt.put('/:role_id', async (req, res) => {
   const { role_id } = req.params;
   try {
     const info = await Controller.updateRole(role_id, req.body);
@@ -38,7 +38,7 @@ rt.put('/:id', async (req, res) => {
   }
 });
 
-rt.delete('/:id', async (req, res) => {
+rt.delete('/:role_id', async (req, res) => {
     const { role_id } = req.params;
     if (!role_id) {
         res.status(400).json({ status:'400', result: 'ID is requires.'})

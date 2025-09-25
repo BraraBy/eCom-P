@@ -24,7 +24,7 @@ rt.get('/', requireAuth, async (req, res) => {
   }
 });
 
-rt.get('/:id', async (req, res) => {
+rt.get('/:order_id', async (req, res) => {
   const { order_id } = req.params;
   try {
     const data = await Controller.getOrdById(order_id);
@@ -34,7 +34,7 @@ rt.get('/:id', async (req, res) => {
   }
 });
 
-rt.delete('/:id', async (req, res) => {
+rt.delete('/:order_id', async (req, res) => {
     const { order_id } = req.params;
     if (!order_id) {
         res.status(400).json({ status:'400', result: 'ID is requires.'})

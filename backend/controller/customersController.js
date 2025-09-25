@@ -146,25 +146,47 @@ const createCus = async (data) => {
 
 // Update customers
 const updateCus = async (customers_id, data) => {
-    const { first_name, last_name, phone, address, image_profile, password, email } = data;
-    const client = await postgres.connect();
-    try { 
-      const result = await client.query(
-          `UPDATE customers
-               SET first_name = $1, last_name = $2, phone = $3, address = $4, image_profile = $5, password = $6, email = $7
-               WHERE customers_id = $8
-               RETURNING *;`,
-          [first_name, last_name, phone, address, image_profile, password, email, customers_id]
-      );
-      
-      return result.rows;
-    } catch (err) {
-      console.error(`Error updating Customers at ID ${customers_id}:`, err);
+  const { first_name, last_name, phone, address, image_profile, password, email } = data;
+  const client = await postgres.connect();
+  try {
+    // อ่านข้อมูลปัจจุบันเพื่อไม่ให้ค่าเดิมหายเมื่อ field ไม่ถูกส่งมา
+    const prevRes = await client.query('SELECT * FROM customers WHERE customers_id = $1;', [customers_id]);
+    if (prevRes.rowCount === 0) {
+      const err = new Error('Customer not found');
+      err.statusCode = 404;
       throw err;
-    } finally {
-      client.release();
     }
-  };
+    const existing = prevRes.rows[0];
+
+    // ถ้ามี password ใหม่ ให้ hash ก่อน บอกไว้ว่า SALT_ROUNDS ถูกตั้งไว้ข้างบน
+    const hashedPassword = password ? await bcrypt.hash(password, SALT_ROUNDS) : existing.password;
+
+    const result = await client.query(
+      `UPDATE customers
+           SET first_name = $1, last_name = $2, phone = $3, address = $4, image_profile = $5, password = $6, email = $7
+           WHERE customers_id = $8
+           RETURNING customers_id, first_name, last_name, phone, address, email, role_id, image_profile, registered_date;`,
+      [
+        first_name || existing.first_name,
+        last_name || existing.last_name,
+        phone || existing.phone,
+        address || existing.address,
+        image_profile || existing.image_profile,
+        hashedPassword,
+        email || existing.email,
+        customers_id,
+      ]
+    );
+
+    // คืน object เดี่ยว (ไม่คืน array)
+    return result.rows[0];
+  } catch (err) {
+    console.error(`Error updating Customers at ID ${customers_id}:`, err);
+    throw err;
+  } finally {
+    client.release();
+  }
+};
 
 
 // Force Delete Prefix record.

@@ -91,7 +91,7 @@ rt.get('/totalCustomers', async (req, res) => {
   }
 });
 
-rt.get('/:id', async (req, res) => {
+rt.get('/:customers_id', async (req, res) => {
   const { customers_id } = req.params;
   try {
     const data = await Controller.getCusById(customers_id);
@@ -129,7 +129,7 @@ rt.post('/', upload.none(), async (req, res) => {
 });
 
 
-rt.put('/:id', async (req, res) => {
+rt.put('/:customers_id', async (req, res) => {
   const { customers_id } = req.params;
   try {
     const info = await Controller.updateCus(customers_id, req.body);
@@ -141,7 +141,7 @@ rt.put('/:id', async (req, res) => {
   }
 });
 
-rt.delete('/:id', async (req, res) => {
+rt.delete('/:customers_id', async (req, res) => {
     const { customers_id } = req.params;
     if (!customers_id) {
         res.status(400).json({ status:'400', result: 'ID is requires.'})
@@ -152,6 +152,23 @@ rt.delete('/:id', async (req, res) => {
     } catch (err){
         res.status(500).json({ status: '500', result: 'Server Error'});
     }
+});
+
+// New route: update profile (frontend calls this)
+rt.put('/update-profile', async (req, res) => {
+  try {
+    const { customers_id } = req.body;
+    if (!customers_id) {
+      return res.status(400).json({ status: '400', message: 'Missing customers_id in body' });
+    }
+
+    const updated = await Controller.updateCus(customers_id, req.body);
+    return res.status(200).json({ status: '200', result: updated });
+  } catch (err) {
+    console.error('Error update-profile:', err);
+    const code = err.statusCode || 500;
+    return res.status(code).json({ status: String(code), message: err.message || 'Server Error' });
+  }
 });
 
 export default rt;
