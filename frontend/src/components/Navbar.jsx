@@ -128,11 +128,19 @@ const Navbar = () => {
                           My Account
                         </Link>
                         <Link
-                          to="/orders"
+                          to="/order_history"
                           className="block px-3 py-2 text-sm hover:bg-gray-100"
                         >
                           Orders
                         </Link>
+                        {(user.role_id === 2 || user.role === 'shop') && (
+                          <Link
+                            to="/management"
+                            className="block px-3 py-2 text-sm hover:bg-gray-100"
+                          >
+                            Management
+                          </Link>
+                        )}
                         <button
                           onClick={() => {
                             logout();

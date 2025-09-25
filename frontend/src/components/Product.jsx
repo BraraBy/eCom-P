@@ -67,47 +67,58 @@ export default function Product() {
           onScroll={onScroll}
           className="flex gap-4 overflow-x-auto scroll-smooth no-scrollbar py-1 px-6"
         >
-          {items.map((p) => (
-            <article
-              key={p.id}
-              className="
-                flex-shrink-0
-                basis-1/1 sm:basis-1/2 lg:basis-1/4
-                group rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-transform duration-200 overflow-hidden
-              "
-            >
-              {/* ใช้การ์ดแบบ Categorie — เอา modal ออก: คลิกที่การ์ดไม่เปิด modal */}
-              <div className="block w-full text-left">
-                <div className="aspect-[4/3] bg-gray-50 overflow-hidden">
-                  <img
-                    src={p.image_url || FALLBACK_IMG}
-                    alt={p.name}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
-                  />
-                </div>
-              </div>
+          {items.map((p, idx) => {
+            // เลือกคีย์ที่ stable และไม่ซ้ำ
+            const key =
+              p.product_id ??
+              p.id ??
+              p.sku ??
+              p.code ??
+              p.slug ??
+              `p-${idx}`; // ใช้ index เป็นทางสุดท้ายเท่านั้น
 
-              <div className="p-3">
-                <h3 className="line-clamp-2 font-medium text-sm text-gray-900 min-h-[40px]">{p.name}</h3>
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="text-indigo-600 font-semibold">฿{formatPrice(p.price)}</span>
-                  <button
-                    className="rounded-lg bg-gray-900 text-white px-3 py-2 text-xs hover:bg-black"
-                    onClick={() =>
-                      window.dispatchEvent(new CustomEvent("cart:add", { detail: { product: p, quantity: 1 } }))
-                    }
-                  >
-                    Add to Cart
-                  </button>
+            return (
+              <article
+                key={key}
+                className="
+                  flex-shrink-0
+                  basis-1/1 sm:basis-1/2 lg:basis-1/4
+                  group rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-transform duration-200 overflow-hidden
+                "
+              >
+                <div className="block w-full text-left">
+                  <div className="aspect-[4/3] bg-gray-50 overflow-hidden">
+                    <img
+                      src={p.image_url || FALLBACK_IMG}
+                      alt={p.name}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
+                    />
+                  </div>
                 </div>
-                {typeof p.stock === "number" && (
-                  <div className="mt-2 text-xs text-gray-500">Stock: {p.stock}</div>
-                )}
-              </div>
-            </article>
-          ))}
+
+                <div className="p-3">
+                  <h3 className="line-clamp-2 font-medium text-sm text-gray-900 min-h-[40px]">{p.name}</h3>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-indigo-600 font-semibold">฿{formatPrice(p.price)}</span>
+                    <button
+                      className="rounded-lg bg-gray-900 text-white px-3 py-2 text-xs hover:bg-black"
+                      onClick={() =>
+                        window.dispatchEvent(new CustomEvent("cart:add", { detail: { product: p, quantity: 1 } }))
+                      }
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                  {typeof p.stock === "number" && (
+                    <div className="mt-2 text-xs text-gray-500">Stock: {p.stock}</div>
+                  )}
+                </div>
+              </article>
+            );
+          })}
         </div>
+
 
         <button
           type="button"

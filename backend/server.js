@@ -20,6 +20,7 @@ import orderRoutes from './routes/orderRoutes.js' ;
 import productRoutes from './routes/productRoutes.js' ;
 import roleRoutes from './routes/roleRoute.js' ;
 import userRoutes from './routes/userRoutes.js' ;
+import uploadRoutes from './routes/uploadRoutes.js';
  
 // Use student routes
 app.use('/api/category', categoryRoutes);
@@ -30,6 +31,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/role', roleRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/upload', uploadRoutes);
 
 app.use('/uploads', express.static('uploads'));
 

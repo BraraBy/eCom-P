@@ -77,3 +77,31 @@ const uploadFile = async (req, res) => {
 };
 
 export { upload, uploadFile };
+
+export const uploadProductImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).send('No file uploaded.');
+    }
+    
+    const dateTime = giveCurrentDateTime();
+    const storageRef = ref(storage, `products/${req.file.originalname}_${dateTime}`);
+
+    const metadata = {
+      contentType: req.file.mimetype,
+    };
+
+    const snapshot = await uploadBytesResumable(storageRef, req.file.buffer, metadata);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+              
+    return res.send({
+      message: 'File uploaded successfully',
+      name: req.file.originalname,
+      type: req.file.mimetype,
+      downloadURL: downloadURL,
+    });
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    return res.status(500).send('File upload failed');
+  }
+};
