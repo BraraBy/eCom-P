@@ -44,3 +44,25 @@ export async function register(name, email, password) {
   window.dispatchEvent(new Event("auth:changed"));
   return user;
 }
+
+export async function refreshAccessToken() {
+  const refreshToken = localStorage.getItem("refreshToken");
+  if (!refreshToken) return null;
+
+  try {
+    const data = await apiFetch("/api/customers/refresh", {
+      method: "POST",
+      body: JSON.stringify({ refreshToken }),
+    });
+    const { accessToken } = data.result;
+    if (accessToken) {
+      localStorage.setItem("accessToken", accessToken);
+      window.dispatchEvent(new Event("auth:changed"));
+      return accessToken;
+    }
+  } catch (err) {
+    console.error("Refresh token failed:", err);
+    logout();
+  }
+  return null;
+}

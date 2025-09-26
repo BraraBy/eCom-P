@@ -6,6 +6,8 @@ import Profile from './pages/Profile';
 import CheckOut from './pages/CheckOut';
 import OrderHistory from './pages/OrderHistory';
 import Management from './pages/managementShop';
+import Promotions from './pages/Promotion';
+import PromotionsManage from './pages/PromotionsManage';
 
 function App() {
   return (
@@ -14,10 +16,12 @@ function App() {
         <Route path='/profile' element={<Profile />} />
         <Route path="/login" element={<Login />} />
         <Route path="/checkout" element={<CheckOut />} />
-        <Route path="/order_history" element={<OrderHistory />} />
+        <Route path="/orders" element={<OrderHistory />} />
         <Route path="/categories" element={<Categorie />} />
         <Route path="/categories/:slug" element={<Categorie />} />
         <Route path="/management" element={<Management/>} />
+        <Route path="/promotions" element={<Promotions/>} />
+        <Route path="/management/promotions" element={<PromotionsManage/>} />
       </Routes>
   )
 }

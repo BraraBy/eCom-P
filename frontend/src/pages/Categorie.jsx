@@ -1,16 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // ⬅️ เพิ่ม useNavigate
+import { useParams, useNavigate, useSearchParams} from "react-router-dom"; // ⬅️ เพิ่ม useNavigate
 import { Navbar, Footer } from "../components";
 import { Menu, X } from "lucide-react";
 import useProduct from "../hooks/useProduct";
+import Swal from "sweetalert2";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4200";
 const slugify = (s = "") =>
   String(s).toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 
 export default function Categorie() {
-  const { slug } = useParams();          // /categories/:slug
-  const navigate = useNavigate();        // ⬅️ ใช้เปลี่ยน URL
+  const { slug } = useParams();
+  const [params] = useSearchParams();
+  const search = (params.get("search") || "").trim();
+  const navigate = useNavigate();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -33,12 +36,9 @@ export default function Categorie() {
             name: c.name,
             slug: slugify(c.name),
           }));
-
-          // สร้าง array ที่รวม "All" ไว้ด้านหน้า แล้วตั้ง state ด้วย array นี้
           const allList = [{ id: "all", name: "All", slug: "all" }, ...list];
           setCategories(allList);
 
-          // ถ้ามี slug ใน URL ให้ค้นหาใน allList (รวม 'all') แล้วตั้ง active ให้ตรง
           if (slug) {
             const s = slugify(slug);
             const match = allList.find((c) => c.slug === s);
@@ -48,9 +48,21 @@ export default function Categorie() {
           }
         } else {
           setCatErr("No categories");
+          Swal.fire({
+            icon: "warning",
+            title: "Category not found",
+            text: "The system did not find any category entries. Please try again later.",
+            confirmButtonColor: "#3085d6",
+          });
         }
       } catch (e) {
         setCatErr(e.message || "Fetch categories failed");
+        Swal.fire({
+          icon: "error",
+          title: "Category loading failed",
+          text: e.message || "An error occurred during the connection.",
+          confirmButtonColor: "#d33",
+        });
       } finally {
         setLoadingCats(false);
       }
@@ -73,6 +85,7 @@ export default function Categorie() {
   const categoryParam = active === "all" ? undefined : active;
   const { items, loading: loadingProducts, error: prodErr } = useProduct({
     category: categoryParam,
+    search: search || undefined,
   });
 
   // sort ฝั่ง client
@@ -85,8 +98,26 @@ export default function Categorie() {
 
   const chips = loadingCats ? new Array(6).fill(null) : categories;
 
+    const onAddToCart = (product, quantity) => {
+      window.dispatchEvent(new CustomEvent("cart:add", { detail: { product, quantity } }));
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "success",
+        title: "Added to cart",
+        showConfirmButton: false,
+        timer: 1400,
+        timerProgressBar: true,
+      });
+    };
+
+    let productTitle = "Products";
+    if (slug && search) productTitle = `Products (หมวด: ${slug}, ค้นหา: ${search})`;
+    else if (slug)      productTitle = `Products (หมวด: ${slug})`;
+    else if (search)    productTitle = `Products (ค้นหา: ${search})`;
+
   return (
-    <div className="bg-gray-100 min-h-screen w-full">
+    <div className="bg-gray-50 min-h-screen w-full">
       <Navbar />
 
       {/* Mobile top bar */}
@@ -175,7 +206,7 @@ export default function Categorie() {
           <section className="flex-1">
             <div className="flex items-center justify-between py-3">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">Products</h2>
+                <h2 className="text-lg font-semibold">{productTitle}</h2>
                 <span className="text-sm text-gray-500">
                   ({loadingProducts ? "…" : sortedItems.length})
                 </span>
@@ -231,11 +262,7 @@ export default function Categorie() {
                         </span>
                         <button
                           className="rounded-lg bg-gray-900 text-white px-3 py-2 text-xs hover:bg-black"
-                          onClick={() =>
-                            window.dispatchEvent(
-                              new CustomEvent("cart:add", { detail: { product: p, quantity: 1 } })
-                            )
-                          }
+                          onClick={() => onAddToCart(p, 1)}
                         >
                           Add to Cart
                         </button>

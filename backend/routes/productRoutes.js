@@ -1,6 +1,6 @@
 import express from 'express';
 import Controller from '../controller/productController.js';
-import { upload, uploadFile } from '../utils/uploadImage.js';
+import { upload, uploadProductImage } from '../utils/uploadImage.js';
 
 const rt = express.Router();
 
@@ -8,21 +8,20 @@ const rt = express.Router();
 
 rt.get('/', async (req, res) => {
   try {
-    const { category_id, category_slug } = req.query;
+    const { page, limit, search, category_id, category_slug } = req.query;
 
-    let data;
-    if (category_id) {
-      data = await Controller.getProByCategoryId(category_id);
-    } else if (category_slug) {
-      data = await Controller.getProByCategorySlug(category_slug);
-    } else {
-      data = await Controller.getAllPro();
-    }
+    const result = await Controller.listProducts({
+      page: page ? Number(page) : 1,
+      limit: limit ? Number(limit) : 10,
+      search: search || '',
+      category_id: category_id ? Number(category_id) : null,
+      category_slug: category_slug || null,
+    });
 
-    res.status(200).json({ status: '200', result: data });
+    res.status(200).json({ status: '200', result }); // { rows, total }
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ status: '500', result: 'Server Error' });
+    console.error('GET /api/products error:', err);
+    res.status(500).json({ status: '500', message: 'Server Error' });
   }
 });
 
@@ -106,63 +105,7 @@ rt.put('/:product_id', async (req, res) => {
 });
 
 // Add this route for Firebase upload
-rt.post('/upload-firebase', upload.single('image'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ 
-        status: '400', 
-        message: 'No file uploaded' 
-      });
-    }
-
-    const { product_id } = req.body;
-    if (!product_id) {
-      return res.status(400).json({ 
-        status: '400', 
-        message: 'Product ID is required' 
-      });
-    }
-
-    const dateTime = giveCurrentDateTime();
-    const storageRef = ref(storage, `products/${req.file.originalname}_${dateTime}`);
-
-    const metadata = {
-      contentType: req.file.mimetype,
-    };
-
-    const snapshot = await uploadBytesResumable(
-      storageRef, 
-      req.file.buffer, 
-      metadata
-    );
-
-    const downloadURL = await getDownloadURL(snapshot.ref);
-
-    // Update product with new image URL
-    const client = await postgres.connect();
-    try {
-      await client.query(
-        'UPDATE products SET image_url = $1 WHERE product_id = $2',
-        [downloadURL, product_id]
-      );
-    } finally {
-      client.release();
-    }
-
-    res.status(200).json({
-      status: '200',
-      message: 'File uploaded successfully',
-      downloadURL
-    });
-    
-  } catch (error) {
-    console.error('Error uploading file:', error);
-    res.status(500).json({ 
-      status: '500', 
-      message: 'File upload failed' 
-    });
-  }
-});
+rt.post('/upload-firebase', upload.single('image'), uploadProductImage);
 
 rt.delete('/:product_id', async (req, res) => {
   const { product_id } = req.params;

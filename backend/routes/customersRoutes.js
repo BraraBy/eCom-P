@@ -118,10 +118,24 @@ rt.post('/', upload.none(), async (req, res) => {
     last_name: req.body.last_name,
     phone: req.body.phone,
     address: req.body.address,
+    street: req.body.street,
+    city: req.body.city,
+    state: req.body.state,
+    country: req.body.country,
+    zip_code: req.body.zip_code,
     role: req.body.role ? req.body.role : 'customer',
     email: req.body.email,
     password: req.body.password,
   };
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(info.email)) {
+    return res.status(400).json({ status: '400', message: 'Invalid email format' });
+  }
+
+  if (!/^[0-9]{10}$/.test(info.phone)) {
+    return res.status(400).json({ status: '400', message: 'Phone number must be exactly 10 digits' });
+  }
 
   if (!info.first_name || !info.last_name || !info.email || !info.password) {
     return res.status(400).json({ status: '400', message: 'Missing required fields.' });

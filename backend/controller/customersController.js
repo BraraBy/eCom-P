@@ -111,34 +111,27 @@ const checkCus = async (data) => {
 
 // Create new customers
 const createCus = async (data) => {
-  const { first_name, last_name, phone, address, password, email, role_id } = data;
+  const { first_name, last_name, phone, address, street, city, state, country, zip_code, password, email, role_id } = data;
 
   const client = await postgres.connect();
   try {
-    // ตรวจซ้ำอีเมลก่อน
-    const dup = await client.query(
-      'SELECT 1 FROM customers WHERE email = $1 LIMIT 1;',
-      [email]
-    );
+    const dup = await client.query('SELECT 1 FROM customers WHERE email = $1 LIMIT 1;', [email]);
     if (dup.rowCount > 0) {
       const err = new Error('Email already exists');
       err.statusCode = 400;
       throw err;
     }
 
-    // hash รหัสผ่านตรงนี้ (ชั้น controller)
     const hashed = await bcrypt.hash(password, SALT_ROUNDS);
 
     const result = await client.query(
-      `INSERT INTO customers (first_name, last_name, phone, address, password, email, role_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)
-       RETURNING customers_id, first_name, last_name, phone, address, email, role_id, registered_date;`,
-      [first_name, last_name, phone, address, hashed, email, role_id]
+      `INSERT INTO customers 
+        (first_name, last_name, phone, address, street, city, state, country, zip_code, password, email, role_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+       RETURNING customers_id, first_name, last_name, phone, address, street, city, state, country, zip_code, email, role_id, registered_date;`,
+      [first_name, last_name, phone, address, street, city, state, country, zip_code, hashed, email, role_id]
     );
-    return result.rows[0]; // ส่งกลับโดยไม่ติด password
-  } catch (err) {
-    console.error('Error creating customer:', err);
-    throw err;
+    return result.rows[0];
   } finally {
     client.release();
   }
@@ -146,43 +139,39 @@ const createCus = async (data) => {
 
 // Update customers
 const updateCus = async (customers_id, data) => {
-  const { first_name, last_name, phone, address, image_profile, password, email } = data;
+  const { first_name, last_name, phone, address, street, city, state, country, zip_code, image_profile, password, email } = data;
   const client = await postgres.connect();
   try {
-    // อ่านข้อมูลปัจจุบันเพื่อไม่ให้ค่าเดิมหายเมื่อ field ไม่ถูกส่งมา
     const prevRes = await client.query('SELECT * FROM customers WHERE customers_id = $1;', [customers_id]);
-    if (prevRes.rowCount === 0) {
-      const err = new Error('Customer not found');
-      err.statusCode = 404;
-      throw err;
-    }
+    if (prevRes.rowCount === 0) throw new Error('Customer not found');
     const existing = prevRes.rows[0];
 
-    // ถ้ามี password ใหม่ ให้ hash ก่อน บอกไว้ว่า SALT_ROUNDS ถูกตั้งไว้ข้างบน
     const hashedPassword = password ? await bcrypt.hash(password, SALT_ROUNDS) : existing.password;
 
     const result = await client.query(
       `UPDATE customers
-           SET first_name = $1, last_name = $2, phone = $3, address = $4, image_profile = $5, password = $6, email = $7
-           WHERE customers_id = $8
-           RETURNING customers_id, first_name, last_name, phone, address, email, role_id, image_profile, registered_date;`,
+       SET first_name=$1, last_name=$2, phone=$3, address=$4,
+           street=$5, city=$6, state=$7, country=$8, zip_code=$9,
+           image_profile=$10, password=$11, email=$12
+       WHERE customers_id=$13
+       RETURNING customers_id, first_name, last_name, phone, address, street, city, state, country, zip_code, email, role_id, image_profile, registered_date;`,
       [
         first_name || existing.first_name,
-        last_name || existing.last_name,
-        phone || existing.phone,
-        address || existing.address,
+        last_name  || existing.last_name,
+        phone      || existing.phone,
+        address    || existing.address,
+        street     || existing.street,
+        city       || existing.city,
+        state      || existing.state,
+        country    || existing.country,
+        zip_code   || existing.zip_code,
         image_profile || existing.image_profile,
         hashedPassword,
-        email || existing.email,
+        email      || existing.email,
         customers_id,
       ]
     );
-
-    // คืน object เดี่ยว (ไม่คืน array)
     return result.rows[0];
-  } catch (err) {
-    console.error(`Error updating Customers at ID ${customers_id}:`, err);
-    throw err;
   } finally {
     client.release();
   }

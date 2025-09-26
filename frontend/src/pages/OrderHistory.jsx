@@ -1,4 +1,3 @@
-// src/pages/OrderHistory.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useOrders from "../hooks/useOrders";
@@ -48,16 +47,16 @@ export default function OrderHistory() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <main className="container mx-auto px-4 py-6">
+      <main className="container md:mx-auto sm:px-30 px-4 py-6">
         <h1 className="text-xl font-semibold mb-4">Order History</h1>
 
         {loadingOrders && (
-          <div className="text-gray-500">กำลังโหลดคำสั่งซื้อ…</div>
+          <div className="text-gray-500">Loading…</div>
         )}
         {errorOrders && <div className="text-red-600">{errorOrders}</div>}
 
         {!loadingOrders && !errorOrders && sorted.length === 0 && (
-          <div className="text-gray-500">ยังไม่มีคำสั่งซื้อ</div>
+          <div className="text-gray-500">No orders yet</div>
         )}
 
         <div className="space-y-4">
@@ -92,7 +91,7 @@ export default function OrderHistory() {
                   </div>
 
                   {/* ขวา: TOTAL */}
-                  <div className="w-40 text-right">
+                  <div className="w-40 sm:text-right">
                     TOTAL:{" "}
                     <span className="font-semibold">฿{fmt(o.total_amount ?? 0)}</span>
                   </div>

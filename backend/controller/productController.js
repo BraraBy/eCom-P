@@ -193,6 +193,51 @@ const deletePro = async (product_id) => {
   }
 };
 
+const listProducts = async ({ page = 1, limit = 10, search = '', category_id = null, category_slug = null }) => {
+  const client = await postgres.connect();
+  try {
+    const offset = (Math.max(1, Number(page)) - 1) * Math.max(1, Number(limit));
+
+    const where = [];
+    const params = [];
+    let i = 1;
+
+    // join กับ category อยู่แล้ว จะ filter จากทั้ง id/slug ก็ได้
+    if (category_id) { where.push(`p.category_id = $${i++}`); params.push(Number(category_id)); }
+    if (category_slug) { where.push(`LOWER(c.slug) = LOWER($${i++})`); params.push(String(category_slug)); }
+    if (search?.trim()) {
+      where.push(`(p.name ILIKE $${i} OR c.name ILIKE $${i})`);
+      params.push(`%${search.trim()}%`);
+      i++;
+    }
+
+    const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+
+    const rowsRes = await client.query(
+      `SELECT p.product_id, p.name, p.price, p.stock, p.image_url, p.category_id,
+              c.name AS category_name
+         FROM products p
+         LEFT JOIN category c ON c.category_id = p.category_id
+         ${whereSql}
+         ORDER BY p.product_id DESC
+         LIMIT $${i++} OFFSET $${i++}`,
+      [...params, Math.max(1, Number(limit)), offset]
+    );
+
+    const countRes = await client.query(
+      `SELECT COUNT(*)::int AS total
+         FROM products p
+         LEFT JOIN category c ON c.category_id = p.category_id
+         ${whereSql}`,
+      params
+    );
+
+    return { rows: rowsRes.rows, total: countRes.rows[0]?.total ?? rowsRes.rows.length };
+  } finally {
+    client.release();
+  }
+};
+
 
 export default {
   getAllPro,
@@ -204,5 +249,6 @@ export default {
   deletePro,
   getTotalPro,
   getProByCategoryId,
-  getProByCategorySlug
+  getProByCategorySlug,
+  listProducts,
 };

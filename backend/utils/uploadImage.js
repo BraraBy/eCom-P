@@ -35,8 +35,6 @@ const uploadFile = async (req, res) => {
         if (!req.file) {
             return res.status(400).send('No file uploaded.');
         }
-
-
         // Get customer_id from request body
         const { customer_id } = req.body;
         if (!customer_id) {
@@ -76,32 +74,46 @@ const uploadFile = async (req, res) => {
     }
 };
 
-export { upload, uploadFile };
-
-export const uploadProductImage = async (req, res) => {
+const uploadProductImage = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).send('No file uploaded.');
+      return res.status(400).json({ message: 'No file uploaded.' });
     }
-    
-    const dateTime = giveCurrentDateTime();
-    const storageRef = ref(storage, `products/${req.file.originalname}_${dateTime}`);
 
-    const metadata = {
-      contentType: req.file.mimetype,
-    };
+    const dateTime = giveCurrentDateTime();
+    const storageRef = ref(
+      storage,
+      `eCom-P/products/${Date.now()}_${req.file.originalname}_${dateTime}`
+    );
+    const metadata = { contentType: req.file.mimetype };
 
     const snapshot = await uploadBytesResumable(storageRef, req.file.buffer, metadata);
     const downloadURL = await getDownloadURL(snapshot.ref);
-              
-    return res.send({
-      message: 'File uploaded successfully',
+
+    const { product_id } = req.body || {};
+    if (product_id) {
+      const client = await postgres.connect();
+      try {
+        await client.query(
+          'UPDATE products SET image_url = $1 WHERE product_id = $2;',
+          [downloadURL, Number(product_id)]
+        );
+      } finally {
+        client.release();
+      }
+    }
+
+    return res.status(200).json({
+      message: 'File uploaded to Firebase storage',
+      downloadURL,
       name: req.file.originalname,
       type: req.file.mimetype,
-      downloadURL: downloadURL,
+      product_id: product_id ? Number(product_id) : null,
     });
   } catch (error) {
-    console.error('Error uploading file:', error);
-    return res.status(500).send('File upload failed');
+    console.error('Error uploading product image:', error);
+    return res.status(500).json({ message: 'File upload failed. Please try again.' });
   }
 };
+
+export { upload, uploadFile, uploadProductImage };

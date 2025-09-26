@@ -1,50 +1,69 @@
-// src/hooks/useProduct.jsx
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4200";
 
-const FALLBACK_IMG = "https://via.placeholder.com/160x160.png?text=No+Image";
-
-export default function useProduct({ category } = {}) {
+export default function useProduct({ category, search } = {}) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [count, setCount] = useState(0);
 
   useEffect(() => {
+    const ac = new AbortController();
     (async () => {
       setLoading(true);
       setError("");
       try {
-        const url = new URL(`${API}/api/products`);
-        if (category && category !== "all") {
-          url.searchParams.set("category_slug", category);
+        const params = new URLSearchParams();
+
+        if (category) {
+          const asString = String(category);
+          if (/^\d+$/.test(asString)) params.set("category_id", asString);
+          else params.set("category_slug", asString);
         }
-        const res = await fetch(url);
+
+        if (search) params.set("search", search);
+
+        const url = `${API}/api/products${params.toString() ? "?" + params.toString() : ""}`;
+        const res = await fetch(url, { signal: ac.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
-        const raw = Array.isArray(data.result) ? data.result : [];
-        const normalized = raw.map((p, idx) => ({
-          ...p,
-          // ให้ทุกชิ้นมี id ที่ stable เพื่อใช้เป็น React key
-          id: p.id ?? p.product_id ?? p.sku ?? p.code ?? p.slug ?? `tmp-${idx}`,
-          // ปรับค่าให้ปลอดภัยต่อ UI
-          name: p.name ?? p.title ?? "Unnamed",
-          price: Number(p.price ?? 0),
-          image_url: p.image_url ?? p.img_url ?? FALLBACK_IMG,
-          stock: typeof p.stock === "number" ? p.stock : undefined,
-        }));
+        const result = data?.result ?? data;
+        let rows = [];
+        let total = 0;
 
-        setItems(normalized);
-        setCount(normalized.length);
-      } catch (err) {
-        setError(err.message);
+        if (!result) {
+          rows = [];
+        } else if (Array.isArray(result)) {
+          rows = result;
+          total = result.length;
+        } else if (Array.isArray(result.rows)) {
+          rows = result.rows;
+          total = Number(result.total ?? result.count ?? rows.length) || rows.length;
+        } else if (Array.isArray(data)) {
+          rows = data;
+          total = data.length;
+        } else {
+          rows = Array.isArray(result) ? result : [result];
+          total = rows.length;
+        }
+
+        setItems(rows);
+        setCount(total);
+      } catch (e) {
+        if (e.name !== "AbortError") {
+          setError(e.message || "Fetch products failed");
+          setItems([]);
+          setCount(0);
+        }
       } finally {
         setLoading(false);
       }
     })();
-  }, [category]);
+
+    return () => ac.abort();
+  }, [category, search]);
 
   return { items, count, loading, error };
 }

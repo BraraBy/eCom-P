@@ -7,7 +7,11 @@ dotenv.config({ path: 'setting.env' });  // โหลดไฟล์ setting
 const app = express();
 const port = process.env.WEB_PORT;
 
-app.use(cors());  // ไว้เปิดช่องให้สามารถดึง api จากฝั่งหน้าบ้านได้
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  credentials: true,
+}));
+
 app.use(express.json());  // Middleware ให้ระบบรองรับ การรับค่าเข้ามาได้โดยใช้ไฟล์ JSON
 app.use(express.urlencoded({ extended: true }));  // Middleware ให้ระบบรองรับ การรับค่าเข้ามาได้โดยใช้ไฟล์ urlencoded
 
@@ -21,6 +25,7 @@ import productRoutes from './routes/productRoutes.js' ;
 import roleRoutes from './routes/roleRoute.js' ;
 import userRoutes from './routes/userRoutes.js' ;
 import uploadRoutes from './routes/uploadRoutes.js';
+import promotionRoutes from './routes/promotionRoutes.js' ;
  
 // Use student routes
 app.use('/api/category', categoryRoutes);
@@ -32,6 +37,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/role', roleRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/promotions', promotionRoutes);
 
 app.use('/uploads', express.static('uploads'));
 

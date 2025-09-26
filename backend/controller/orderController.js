@@ -118,6 +118,60 @@ const getItemsByOrderForCustomer = async (order_id, customers_id) => {
   }
 };
 
+const createOrderWithItems = async (customers_id, items = [], total_amount = 0) => {
+  if (!customers_id) throw new Error('UNAUTHORIZED');
+  if (!Array.isArray(items) || items.length === 0) throw new Error('NO_ITEMS');
+
+  const client = await postgres.connect();
+  try {
+    await client.query('BEGIN');
+
+    // 1) สร้าง order (สถานะแล้วแต่ระบบคุณ — ใช้ COMPLETED/PLACED)
+    const orderRes = await client.query(
+      `INSERT INTO orders (customer_id, total_amount, status)
+       VALUES ($1, $2, 'COMPLETED') RETURNING order_id`,
+      [customers_id, Number(total_amount) || 0]
+    );
+    const order_id = orderRes.rows[0].order_id;
+
+    // 2) วนแต่ละรายการ: lock สินค้า, เช็คสต็อก, ตัดสต็อก, แทรก order_details
+    for (const it of items) {
+      const pid = Number(it.product_id);
+      const qty = Math.max(1, Number(it.quantity || 1));
+      const price = Number(it.price || 0);
+
+      // ล็อกแถวสินค้าป้องกัน race condition
+      const prodRes = await client.query(
+        `SELECT product_id, name, stock FROM products WHERE product_id = $1 FOR UPDATE`,
+        [pid]
+      );
+      if (prodRes.rowCount === 0) {
+        throw new Error(`PRODUCT_NOT_FOUND:${pid}`);
+      }
+      const { name, stock } = prodRes.rows[0];
+      if (Number(stock) < qty) {
+        throw new Error(`INSUFFICIENT_STOCK:${pid}:${name}:${stock}:${qty}`);
+      }
+
+      await client.query(`UPDATE products SET stock = stock - $1 WHERE product_id = $2`, [qty, pid]);
+
+      await client.query(
+        `INSERT INTO order_details (order_id, product_id, quantity, price)
+         VALUES ($1, $2, $3, $4)`,
+        [order_id, pid, qty, price]
+      );
+    }
+
+    await client.query('COMMIT');
+    return { order_id };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+};
+
 const deleteOrd = async (order_id) => {
   const client = await postgres.connect();
   try {
@@ -141,5 +195,6 @@ export default {
   getTotalOrd,
   getAllOrdByCustomer,
   createOrd,
-  getItemsByOrderForCustomer
+  getItemsByOrderForCustomer,
+  createOrderWithItems,
 };

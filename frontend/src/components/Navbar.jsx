@@ -1,11 +1,21 @@
+import { useEffect, useState } from 'react';
 import { useNavbar } from '../hooks/useNavbar';
 import CartDrawer from "../components/ui/CartDrawer";
-import { Link } from 'react-router-dom';
+import PromotionDrawer from "../components/ui/PromotionDrawer";
+import { Link, } from 'react-router-dom';
 import { logout } from '../api/auth';
 import img from '../image/e-comP_logo.png';
-import { useState } from 'react';
 
 const Navbar = () => {
+  const [hasModal, setHasModal] = useState(false);
+  const [isPromoOpen, setIsPromoOpen] = useState(false);
+
+  useEffect(() => {
+    const onModal = (e) => setHasModal(!!e.detail);
+    window.addEventListener('app:modal', onModal);
+    return () => window.removeEventListener('app:modal', onModal);
+  }, []);
+
   const {
     isDropdownOpen,
     toggleDropdown,
@@ -21,8 +31,16 @@ const Navbar = () => {
     user,
   } = useNavbar();
 
+  const goSearch = (e, isMobile = false) => {
+    e.preventDefault();
+    const q = searchText.trim();
+    if (!q) return;
+    navigate(`/categories?search=${encodeURIComponent(q)}`);
+    if (isMobile) toggleSearch();
+  };
+
   return (
-    <header className="bg-white sticky top-0 shadow-md z-100">
+    <header className="bg-white sticky top-0 shadow-md z-50">
       <div className="sm:px-5 md:px-8 xl:px-80 px-5 py-4 flex justify-between items-center">
         <div
           className="flex flex-row cursor-pointer"
@@ -40,25 +58,35 @@ const Navbar = () => {
           </div>
         </div>
 
+        {/* Desktop Search */}
         <div className="flex items-center justify-center">
-          <div className="hidden md:flex w-full max-w-md bg-gray-100 rounded-md items-center px-4 py-2">
+          <form
+            onSubmit={goSearch}
+            className="hidden md:flex w-full max-w-md bg-gray-100 rounded-md items-center px-4 py-2"
+          >
             <input
               className="flex-1 w-100 bg-transparent font-semibold text-sm outline-none placeholder-gray-400"
               type="text"
               placeholder="I'm searching for ..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
             />
-            <button className="flex">
+            <button type="submit" className="flex">
               <i className="bx bx-search text-2xl"></i>
             </button>
-          </div>
+          </form>
         </div>
 
         <nav className="contents">
           <ul className="flex items-center gap-4 flex-row">
+            {/* Mobile Search */}
             <li>
               <div className="flex items-center md:hidden">
                 {isSearchOpen ? (
-                  <div className="flex items-center bg-gray-100 rounded-md px-3 py-2 w-60 transition-all duration-300">
+                  <form
+                    onSubmit={(e) => goSearch(e, true)}
+                    className="flex items-center bg-gray-100 rounded-md px-3 py-2 w-60 transition-all duration-300"
+                  >
                     <input
                       type="text"
                       className="flex-1 bg-transparent outline-none text-sm"
@@ -67,10 +95,13 @@ const Navbar = () => {
                       onChange={(e) => setSearchText(e.target.value)}
                       autoFocus
                     />
-                    <button onClick={toggleSearch} className="flex text-gray-400 hover:text-gray-600">
+                    <button type="submit" className="flex text-gray-400 hover:text-gray-600">
+                      <i className="bx bx-search text-2xl"></i>
+                    </button>
+                    <button type="button" onClick={toggleSearch} className="flex text-gray-400 hover:text-gray-600 ml-1">
                       <i className="bx bx-x text-2xl"></i>
                     </button>
-                  </div>
+                  </form>
                 ) : (
                   <button onClick={toggleSearch} className="flex p-2 rounded-md">
                     <i className="bx bx-search text-2xl"></i>
@@ -88,6 +119,21 @@ const Navbar = () => {
                   <i className="bx bx-cart text-2xl text-gray-600 hover:text-blue-500"></i>
                 </button>
               </li>
+            )}
+
+            {!isSearchOpen && (
+              <li>
+                <button
+                  className="w-10 h-10 flex items-center justify-center rounded-md hover:bg-gray-100 transition"
+                  onClick={() => setIsPromoOpen(true)}
+                >
+                  <i className="bx bx-purchase-tag text-2xl text-gray-600 hover:text-blue-500"></i>
+                </button>
+              </li>
+            )}
+
+            {!isSearchOpen && (
+              <PromotionDrawer isOpen={isPromoOpen} onClose={() => setIsPromoOpen(false)} />
             )}
 
             {!isSearchOpen && (
@@ -128,7 +174,7 @@ const Navbar = () => {
                           My Account
                         </Link>
                         <Link
-                          to="/order_history"
+                          to="/orders"
                           className="block px-3 py-2 text-sm hover:bg-gray-100"
                         >
                           Orders
@@ -139,6 +185,14 @@ const Navbar = () => {
                             className="block px-3 py-2 text-sm hover:bg-gray-100"
                           >
                             Management
+                          </Link>
+                        )}
+                        {(user.role === 'shop' || user.role_id === 2) && (
+                          <Link
+                            to="/management/promotions"
+                            className="block px-3 py-2 text-sm hover:bg-gray-100"
+                          >
+                            Promotions
                           </Link>
                         )}
                         <button
