@@ -15,7 +15,6 @@ const getAllRole = async () => {
   }
 };
 
-// Create new customers
 const createRole = async (data) => {
     const { rolename } = data;
     const client = await postgres.connect();
@@ -35,7 +34,6 @@ const createRole = async (data) => {
     }
   };
 
-// Update customers
 const updateRole = async (role_id, data) => {
     const { rolename } = data;
     const client = await postgres.connect();
@@ -57,8 +55,6 @@ const updateRole = async (role_id, data) => {
     }
   };
 
-
-// Force Delete Prefix record.
 const deleteRole = async (role_id) => {
   const client = await postgres.connect();
   try {

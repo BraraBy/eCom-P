@@ -95,7 +95,6 @@ export default function PromotionsManage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
 
-  // ฟอร์มสร้าง
     const [f, setF] = useState({
     title: "",
     description: "",
@@ -110,8 +109,6 @@ export default function PromotionsManage() {
     max_total_uses: "",
     max_uses_per_user: "",
     });
-
-  // scope (ต่อโปรฯ)
   const [scopeDraft, setScopeDraft] = useState({}); 
 
   const load = async () => {
@@ -141,8 +138,6 @@ export default function PromotionsManage() {
     }
     return true;
     }, [f]);
-
-
 
   const onCreate = async (e) => {
     e.preventDefault();

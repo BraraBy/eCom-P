@@ -64,7 +64,7 @@ rt.post('/login', async (req, res) => {
       result: {
         user,
         accessToken,
-        refreshToken, // ถ้าไม่ใช้ refresh ก็เอาออกได้
+        refreshToken,
       }
     });
   } catch (err) {
@@ -78,7 +78,6 @@ rt.post('/refresh', async (req, res) => {
     if (!refreshToken) return res.status(400).json({ status: '400', message: 'Missing refresh token' });
 
     const payload = verifyRefreshToken(refreshToken);
-    // ออก access token ใหม่
     const accessToken = signAccessToken({
       customers_id: payload.customers_id,
       email: payload.email,
@@ -177,7 +176,6 @@ rt.delete('/:customers_id', async (req, res) => {
     }
 });
 
-// New route: update profile (frontend calls this)
 rt.put('/update-profile', async (req, res) => {
   try {
     const { customers_id } = req.body;

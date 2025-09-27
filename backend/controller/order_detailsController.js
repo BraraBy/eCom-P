@@ -29,7 +29,6 @@ const getOddById = async (order_details_id) => {
   }
 };
 
-// Create new order_details
 const createOdd = async (data) => {
     const { order_id,product_id,quantity,price } = data;
     const client = await postgres.connect();
@@ -49,7 +48,6 @@ const createOdd = async (data) => {
     }
 };
 
-// Update order_details
 const updateOdd = async (order_details_id, data) => {
     const { order_id,product_id,quantity,price } = data;
     const client = await postgres.connect();
@@ -71,8 +69,6 @@ const updateOdd = async (order_details_id, data) => {
     }
   };
 
-
-// Force Delete Prefix record.
 const deleteOdd = async (order_details_id) => {
   const client = await postgres.connect();
   try {

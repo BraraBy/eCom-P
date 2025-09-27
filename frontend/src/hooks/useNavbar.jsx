@@ -9,7 +9,6 @@ export function useNavbar() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
 
-  // ✅ ใหม่: เก็บรูปและข้อมูลผู้ใช้ (อ่านจาก localStorage)
   const [avatarUrl, setAvatarUrl] = useState(DEFAULT_AVATAR);
   const [user, setUser] = useState(null);
 
@@ -19,7 +18,6 @@ export function useNavbar() {
   const toggleDropdown = () => setIsDropdownOpen(prev => !prev);
   const toggleSearch = () => setIsSearchOpen(prev => !prev);
 
-  // ✅ ใหม่: ฟังก์ชันโหลด user จาก localStorage
   const loadUserFromStorage = () => {
     try {
       const u = JSON.parse(localStorage.getItem('user') || 'null');
@@ -32,7 +30,6 @@ export function useNavbar() {
   };
 
   useEffect(() => {
-    // เดิม: ปิด dropdown เมื่อคลิกนอก/กด ESC
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
@@ -42,7 +39,6 @@ export function useNavbar() {
       if (event.key === 'Escape') setIsDropdownOpen(false);
     };
 
-    // ✅ ใหม่: โหลด user ครั้งแรก + subscribe event เวลา login/logout หรืออัปเดตรูป
     loadUserFromStorage();
     const handleAuthChanged = () => loadUserFromStorage();
     const handleStorage = () => loadUserFromStorage();
@@ -61,7 +57,6 @@ export function useNavbar() {
   }, []);
 
   return {
-    // เดิม
     isDropdownOpen,
     setIsDropdownOpen,
     isSearchOpen,

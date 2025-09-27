@@ -1,4 +1,3 @@
-// src/pages/managementShop.jsx
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Grid, _ } from "gridjs-react";
@@ -6,7 +5,6 @@ import { API_URL, apiFetch } from "../lib/api";
 import { Navbar, Footer } from "../components";
 import Swal from "sweetalert2";
 
-// SVG fallback (ไม่พึ่งเน็ต)
 const FALLBACK_IMG =
   "data:image/svg+xml;utf8," +
   encodeURIComponent(
@@ -30,7 +28,6 @@ export default function ManagementShop() {
       try {
         const res = await fetch(`${API_URL}/api/category`);
         const data = await res.json();
-        // รองรับทั้ง {result: [...] } หรือ [...]
         const list = data?.result ?? data ?? [];
         setCategories(list);
       } catch (e) {
@@ -45,7 +42,6 @@ export default function ManagementShop() {
     try { return JSON.parse(localStorage.getItem("user") || "{}"); } catch { return null; }
   });
 
-  // guard เฉพาะ shop/admin
   useEffect(() => {
     if (!user) return navigate("/login", { replace: true });
     const role = user.rolename || user.role || user.role_name;
@@ -53,7 +49,6 @@ export default function ManagementShop() {
     if (!isShop) navigate("/", { replace: true });
   }, [user, navigate]);
 
-  // states
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [page, setPage] = useState(1);
@@ -61,22 +56,19 @@ export default function ManagementShop() {
   const [total, setTotal] = useState(0);
   const [refreshKey, setRefreshKey] = useState(1);
   const [nameError, setNameError] = useState("");
-  const lastRawRef = useRef([]);          // เก็บ rows ล่าสุด (array)
-  const lastDataHashRef = useRef(null);   // เก็บ hash/string ของ rows ล่าสุด
+  const lastRawRef = useRef([]);
+  const lastDataHashRef = useRef(null);
   const [isFetching, setIsFetching] = useState(false);
 
-  // debounce search input to avoid rapid server prop changes (reduces Grid re-init)
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 200); // ให้ไวขึ้น
     return () => clearTimeout(t);
   }, [search]);
  
-  // immediate local filter for snappy UI while user is typing
   useEffect(() => {
     try {
       const raw = lastRawRef.current || [];
       if (!search) {
-        // restore full rows from last fetch
         setRowsData(raw);
         return;
       }
@@ -88,7 +80,6 @@ export default function ManagementShop() {
       const filtered = raw.filter((p) => String(p?.name || "").toLowerCase().includes(q));
       setRowsData(filtered);
     } catch {
-      // ignore
     }
   }, [search]);
 
@@ -128,18 +119,15 @@ export default function ManagementShop() {
     } finally {
       setIsFetching(false);
     }
-
-    // คืนข้อมูลตามจำนวนคอลัมน์ใน Grid (5 คอลัมน์ + 1 ช่อง dummy)
     return rows.map((p, i) => [{ ...p, _rowIndex: rows.length - i - 1 }, p, p, p, p, null]);
   }, []);
 
-  // 2) ตัวช่วย refetch สำหรับ mobile และไว้เรียกหลังบันทึก/ลบ
   const refetch = useCallback(async () => {
     try {
       setIsFetching(true);
       const res = await fetch(serverUrl, { headers: { "Content-Type": "application/json" } });
       const data = await res.json();
-      thenFn(data);            // อัปเดต rowsData/total ให้ฝั่ง mobile
+      thenFn(data);
     } catch (e) {
       console.error("refetch failed", e);
     } finally {
@@ -149,19 +137,15 @@ export default function ManagementShop() {
 
     useEffect(() => {
     const isOpen = Boolean(openForm || toDelete);
-    // blur any active element first to avoid "aria-hidden on an element because its descendant retained focus" error
     try {
       const active = document.activeElement;
       if (isOpen && active instanceof HTMLElement && document.body.contains(active)) {
         active.blur();
       }
     } catch (e) {
-      /* ignore */
     }
 
     window.dispatchEvent(new CustomEvent('app:modal', { detail: isOpen }));
-
-    // lock body scroll when modal open
     document.body.classList.toggle('overflow-hidden', isOpen);
 
     return () => {
@@ -170,7 +154,6 @@ export default function ManagementShop() {
     };
   }, [openForm, toDelete]);
 
-  // ---------- actions ----------
   const handleEdit = useCallback((p) => {
     setEditing(p);
     setForm({
@@ -222,15 +205,14 @@ export default function ManagementShop() {
       return;
     }
 
-    // 1) upload image ถ้าเลือกไฟล์
     let uploadedUrl = editing?.image_url || form.image_url || "";
     if (form.image_file instanceof File) {
       const fd = new FormData();
-      fd.append("image", form.image_file); // field ต้องชื่อ image
+      fd.append("image", form.image_file);
       const upRes = await fetch(`${API_URL}/api/products/upload-firebase`, {
         method: "POST",
         headers: { Authorization: `Bearer ${localStorage.getItem("accessToken") || ""}` },
-        body: fd, // ห้ามตั้ง Content-Type เอง
+        body: fd,
       });
       if (!upRes.ok) {
         const txt = await upRes.text().catch(() => "");
@@ -245,8 +227,6 @@ export default function ManagementShop() {
       const { downloadURL } = await upRes.json();
       uploadedUrl = downloadURL || "";
     }
-
-    // 2) save JSON
     const payload = {
       name: form.name.trim(),
       price: Number(form.price || 0),
@@ -261,7 +241,6 @@ export default function ManagementShop() {
       } else {
         await apiFetch(`/api/products`, { method: "POST", body: JSON.stringify(payload) });
       }
-      // reset
       setOpenForm(false);
       setEditing(null);
       setForm(emptyForm);
@@ -273,32 +252,28 @@ export default function ManagementShop() {
         toast: true,
         position: "top-end",
         icon: "success",
-        title: editing ? "แก้ไขเรียบร้อย" : "สร้างสินค้าเรียบร้อย",
+        title: editing ? "Fixed" : "Product creation completed",
         showConfirmButton: false,
         timer: 1400,
       });
     } catch (err) {
       const msg = String(err?.message || "");
       if (msg.includes("409") || msg.includes("already exists") || msg.includes("ชื่อนี้")) {
-        setNameError("ชื่อนี้มีอยู่แล้ว กรุณาเปลี่ยนชื่อสินค้า");
+        setNameError("This name already exists. Please change the product name.");
         return;
       }
       console.error(err);
       await Swal.fire({
         icon: "error",
-        title: "บันทึกไม่สำเร็จ",
-        text: err?.message || "เกิดข้อผิดพลาดในการบันทึก",
+        title: "Recording failed",
+        text: err?.message || "An error occurred while saving.",
         confirmButtonColor: "#d33",
       });
     }
   }
 
-  // ---------- columns ----------
-
 const columns = useMemo(() => [
   { id: "raw",name: "RAW", hidden: true },
-
-  // Product
   {
     id: "product",
     name: "Product",
@@ -326,8 +301,6 @@ const columns = useMemo(() => [
       );
     },
   },
-
-  // Category
   {
     id: "category",
     name: "Category",
@@ -339,8 +312,6 @@ const columns = useMemo(() => [
         </span>
       ),
   },
-
-  // Price — ชิดขวาภายในเซลล์
   {
     id: "price",
     name: _(<div className="text-right">Price</div>),
@@ -352,8 +323,6 @@ const columns = useMemo(() => [
         </div>
       ),
   },
-
-  // Stock — ชิดขวาภายในเซลล์
   {
     id: "stock",
     name: _(<div className="text-right">Stock</div>),
@@ -367,8 +336,6 @@ const columns = useMemo(() => [
       );
     },
   },
-
-  // Actions — ไม่ชิดขอบขวา
   {
     id: "actions",
     name: _(<div className="text-right">Actions</div>),
@@ -403,7 +370,6 @@ const columns = useMemo(() => [
     then: thenFn,
   }), [serverUrl, thenFn]);
 
-  // เมื่อ serverUrl เปลี่ยน ให้ตั้ง isFetching = true เพื่อแสดง spinner
   useEffect(() => {
     setIsFetching(true);
   }, [serverUrl]);
@@ -531,7 +497,7 @@ const columns = useMemo(() => [
 
                 <div className="flex flex-none items-center gap-2 pl-1">
                   <button
-                    title="แก้ไข"
+                    title="Edit"
                     className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
                     onClick={() => handleEdit(p)}
                   >
@@ -540,7 +506,7 @@ const columns = useMemo(() => [
                     </svg>
                   </button>
                   <button
-                    title="ลบ"
+                    title="Delete"
                     className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-rose-50 text-rose-700 ring-1 ring-rose-200 hover:bg-rose-100"
                     onClick={() => handleDelete(p)}
                   >
@@ -568,9 +534,8 @@ const columns = useMemo(() => [
             }), []);
 
             const gridStyle = useMemo(() => ({ table: { borderSpacing: 0 } }), []);
-            const gridLang = useMemo(() => ({ noRecordsFound: "ไม่พบสินค้า", loading: "กำลังโหลด…" }), []);
+            const gridLang = useMemo(() => ({ noRecordsFound: "No products found", loading: "Loading…" }), []);
 
-            // memoize Grid node so it only re-creates when columns / serverConfig / rowAttr change
             const gridNode = useMemo(() => (
               <Grid
                 columns={columns}
@@ -704,10 +669,10 @@ function CategorySelect({ label, value, onChange, options = [], loading }) {
       <label className="mb-1 block text-sm text-gray-600">{label}</label>
       <div className="flex gap-2">
         <select
-          value={value ?? ""}                 // "" = ยังไม่เลือก
+          value={value ?? ""}
           onChange={(e) => {
             const v = e.target.value;
-            onChange(v ? Number(v) : "");     // เก็บเป็น number หรือว่าง
+            onChange(v ? Number(v) : "");
           }}
           disabled={loading || options.length === 0}
           className="w-full rounded-xl border border-gray-200 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50"

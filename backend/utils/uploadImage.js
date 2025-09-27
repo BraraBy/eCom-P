@@ -10,7 +10,6 @@ const firebaseConfig = {
     apiKey: process.env.API_KEY,
     authDomain: process.env.AUTH_DOMAIN,
     projectId: process.env.PROJECT_ID,
-    // databaseURL: process.env.FIRESTORE_DB_URL,
     storageBucket: process.env.STORAGE_BUCKET,
     messagingSenderId: process.env.MESSAGING_SENDER_ID,
     appId: process.env.APP_ID,
@@ -35,7 +34,6 @@ const uploadFile = async (req, res) => {
         if (!req.file) {
             return res.status(400).send('No file uploaded.');
         }
-        // Get customer_id from request body
         const { customer_id } = req.body;
         if (!customer_id) {
             return res.status(400).send('No customer_id provided.');

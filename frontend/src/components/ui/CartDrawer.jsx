@@ -8,7 +8,6 @@ const CartDrawer = ({ isOpen, onClose }) => {
   const overlayRef = useRef(null);
   const { items, patchQty, remove, clear, total } = useCart();
 
-  // ล็อกสกรอลล์เมื่อเปิด
   useEffect(() => {
     const root = document.documentElement;
     if (isOpen) root.style.overflow = "hidden";
@@ -16,7 +15,6 @@ const CartDrawer = ({ isOpen, onClose }) => {
     return () => { root.style.overflow = ""; };
   }, [isOpen]);
 
-  // ปิดเมื่อคลิกนอก/กด ESC
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (drawerRef.current && !drawerRef.current.contains(e.target) && overlayRef.current?.contains(e.target)) {

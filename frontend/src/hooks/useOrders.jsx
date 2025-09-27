@@ -6,10 +6,9 @@ export default function useOrders() {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [errorOrders, setErrorOrders] = useState("");
 
-  const [itemsByOrder, setItemsByOrder] = useState({}); // { [order_id]: items[] }
-  const [loadingItems, setLoadingItems] = useState({}); // { [order_id]: boolean }
-  const [errorItems, setErrorItems] = useState({});     // { [order_id]: string }
-
+  const [itemsByOrder, setItemsByOrder] = useState({});
+  const [loadingItems, setLoadingItems] = useState({});
+  const [errorItems, setErrorItems] = useState({});
   useEffect(() => {
     (async () => {
       setLoadingOrders(true);

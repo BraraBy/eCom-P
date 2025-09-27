@@ -1,4 +1,3 @@
-// src/hooks/useHorizontalScroll.jsx
 import { useEffect, useRef, useState, useCallback } from "react";
 
 export default function useHorizontalScroll(deps = []) {
@@ -6,7 +5,7 @@ export default function useHorizontalScroll(deps = []) {
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
 
-  const TH = 2; // threshold กันเลขปัดเศษ/iOS bounce
+  const TH = 2;
 
   const updateArrows = useCallback(() => {
     const el = scrollerRef.current;
@@ -26,7 +25,6 @@ export default function useHorizontalScroll(deps = []) {
       left: el.scrollLeft + (dir === "left" ? -amount : amount),
       behavior: "smooth",
     });
-    // เรียกเช็คอีกครั้งหลังเลื่อน (smooth)
     setTimeout(updateArrows, 350);
   }, [updateArrows]);
 
@@ -34,15 +32,11 @@ export default function useHorizontalScroll(deps = []) {
     const el = scrollerRef.current;
     if (!el) return;
 
-    // เรียกตอน mount + frame ถัดไปให้ layout เสถียร
     updateArrows();
     const raf = requestAnimationFrame(updateArrows);
-
-    // ฟัง scroll/resize แบบ DOM
     el.addEventListener("scroll", updateArrows, { passive: true });
     window.addEventListener("resize", updateArrows);
 
-    // อัปเดตเมื่อรูปโหลดทำให้ขนาดเปลี่ยน
     const imgs = Array.from(el.querySelectorAll("img"));
     const onImg = () => updateArrows();
     imgs.forEach(img => {
@@ -51,7 +45,6 @@ export default function useHorizontalScroll(deps = []) {
       img.addEventListener("error", onImg);
     });
 
-    // เฝ้าขนาดภายในเปลี่ยน
     const ro = new ResizeObserver(updateArrows);
     ro.observe(el);
 
@@ -67,10 +60,8 @@ export default function useHorizontalScroll(deps = []) {
     };
   }, [updateArrows]);
 
-  // เช็คใหม่เมื่อ deps (เช่น items) เปลี่ยน
   useEffect(() => { updateArrows(); }, deps);
 
-  // ให้ JSX ใช้ onScroll ของ React ได้ด้วย
   const onScroll = updateArrows;
 
   return { scrollerRef, canLeft, canRight, scrollBy, updateArrows, onScroll };

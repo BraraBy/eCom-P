@@ -41,7 +41,6 @@ const getUserById = async (user_id) => {
   }
 };
 
-// Get Prefix by Name. Only returns prefix where isDelete is false.
 const getUserByName = async (data) => {
   const client = await postgres.connect();
   const { username } = data;
@@ -73,7 +72,6 @@ const checkUser = async (data) => {
   }
 };
 
-// Create new user
 const createUser = async (data) => {
     const { role_id, username ,password, email } = data;
     const client = await postgres.connect();
@@ -93,7 +91,6 @@ const createUser = async (data) => {
     }
   };
 
-// Update user
 const updateUser = async (user_id, data) => {
     const { role_id, username ,password, email } = data;
     const client = await postgres.connect();
@@ -115,8 +112,6 @@ const updateUser = async (user_id, data) => {
     }
   };
 
-
-// Force Delete Prefix record.
 const deleteUser = async (user_id) => {
   const client = await postgres.connect();
   try {

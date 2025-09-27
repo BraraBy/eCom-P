@@ -30,9 +30,7 @@ export function useInfo () {
     email: "",
     password: "",
     role: "",
-    // เดิมมี address แบบสตริงเดียว ถ้าจะยังเก็บไว้ก็ได้
     address: "",
-    // ที่เพิ่มใหม่
     street: "",
     city: "",
     state: "",
@@ -99,7 +97,6 @@ export function useInfo () {
       return;
     }
 
-    // ตรวจสอบ email
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       Swal.fire({
         icon: 'warning',
@@ -123,7 +120,6 @@ export function useInfo () {
       return;
     }
 
-    // ส่งแบบ FormData ไป backend
     const form = new FormData();
     form.append('first_name', formData.first_name);
     form.append('last_name',  formData.last_name);
@@ -154,7 +150,6 @@ export function useInfo () {
       return;
     }
 
-    // อัปโหลดรูปหลังสมัคร
     const file = profileImageInputRef.current?.files[0];
     if (!file || !file.type.startsWith('image/')) {
       await Swal.fire({ icon: 'warning', title: 'Invalid image', text: 'กรุณาเลือกรูปภาพก่อนสร้างบัญชี', confirmButtonColor: '#3085d6' });
@@ -226,7 +221,6 @@ export function useInfo () {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // ดึงโปรไฟล์มาเติมฟอร์ม (รวมฟิลด์ที่อยู่ใหม่ ถ้า backend มีให้)
   const fetchProfile = useCallback(async () => {
     setLoading(true);
     setError("");

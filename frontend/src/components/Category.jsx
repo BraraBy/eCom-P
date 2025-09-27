@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4200";
 
-// ไอคอนพื้นฐานตามชื่อหมวด (ปรับเพิ่มได้)
 const ICON_MAP = {
   snacks: "bx bx-cookie",
   drinks: "bx bx-drink",

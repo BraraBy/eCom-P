@@ -1,4 +1,3 @@
-// src/hooks/useCart.jsx
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 
 function safeParse(json, fallback) { try { return JSON.parse(json); } catch { return fallback; } }
@@ -11,7 +10,6 @@ export default function useCart() {
   const [user, setUser] = useState(getUser());
   const keyRef = useRef(cartKeyForUser(user));
 
-  // migrate legacy key -> guest (ครั้งเดียวพอ)
   useEffect(() => {
     const legacy = safeParse(localStorage.getItem("cart.items") || "[]", []);
     const guest  = readCart("cart:guest");
@@ -27,14 +25,12 @@ export default function useCart() {
     });
   }, []);
 
-  // 🔐 ฟังการเปลี่ยนแปลงสถานะล็อกอิน
   useEffect(() => {
     const onAuthChanged = () => {
       const newUser = getUser();
       const newKey  = cartKeyForUser(newUser);
       const oldKey  = keyRef.current;
 
-      // ถ้าล็อกอินเข้ามาใหม่ → ล้าง guest ทิ้ง และใช้ตะกร้าของ user ตามที่มี (ไม่ merge)
       if (newKey !== oldKey && newUser?.customers_id) {
         localStorage.removeItem("cart:guest");
       }
@@ -46,7 +42,6 @@ export default function useCart() {
 
     window.addEventListener("auth:changed", onAuthChanged);
 
-    // sync ข้ามแท็บ (ถ้าอีกแท็บแก้ตะกร้าของ key เดียวกัน)
     const onStorage = (e) => {
       if (!e.key) return;
       if (e.key === keyRef.current) setItems(readCart(keyRef.current));
@@ -59,7 +54,6 @@ export default function useCart() {
     };
   }, []);
 
-  // 👉 (optional) รองรับปุ่มที่ยิงอีเวนต์ 'cart:add' มาจากที่อื่น
   useEffect(() => {
     const onAdd = (e) => {
       const { product, quantity } = e.detail || {};
@@ -68,15 +62,14 @@ export default function useCart() {
     };
     window.addEventListener("cart:add", onAdd);
     return () => window.removeEventListener("cart:add", onAdd);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // ใช้ [] เพื่อเลี่ยง rebind event เมื่อ add เปลี่ยน
+  }, []);
 
   // actions
   const add = useCallback((p, q = 1) => {
     const id = p?.id ?? p?.product_id;
     if (!id) return;
     const stock = Number(p.stock ?? Infinity);
-    if (Number.isFinite(stock) && stock <= 0) return; // out of stock: ไม่เพิ่ม
+    if (Number.isFinite(stock) && stock <= 0) return;
     const mapped = {
       id,
       name: p.name ?? 'Product',

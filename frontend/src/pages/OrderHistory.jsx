@@ -13,7 +13,6 @@ export default function OrderHistory() {
   const navigate = useNavigate();
   const token = localStorage.getItem("accessToken");
 
-  // ถ้าไม่ได้ล็อกอิน → ไปหน้า login แล้วกลับมาที่ /orders
   useEffect(() => {
     if (!token) navigate("/login?redirect=/orders", { replace: true });
   }, [token, navigate]);
@@ -28,9 +27,8 @@ export default function OrderHistory() {
     loadItems,
   } = useOrders();
 
-  const [open, setOpen] = useState({}); // { [order_id]: boolean }
+  const [open, setOpen] = useState({});
 
-  // เรียงใหม่ฝั่ง client (ล่าสุดอยู่บน)
   const sorted = [...orders].sort(
     (a, b) =>
       new Date(b.order_date || b.created_at) -
@@ -61,7 +59,6 @@ export default function OrderHistory() {
 
         <div className="space-y-4">
           {sorted.map((o, idx) => {
-            // เลขลำดับสำหรับ "ผู้ใช้คนนี้" (ใหม่สุดเป็น #1)
             const userSeq = sorted.length - idx;
             const isOpen = !!open[o.order_id];
             const items = itemsByOrder[o.order_id] || [];
@@ -84,19 +81,13 @@ export default function OrderHistory() {
                       .toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' })}
                     </div>
                   </div>
-
-                  {/* กลาง: จำนวนรายการ */}
                   <div className="w-24 text-right text-gray-600">
                     total: <span className="font-medium">{o.item_count ?? "-"}</span>
                   </div>
-
-                  {/* ขวา: TOTAL */}
                   <div className="w-40 sm:text-right">
                     TOTAL:{" "}
                     <span className="font-semibold">฿{fmt(o.total_amount ?? 0)}</span>
                   </div>
-
-                  {/* ขวาสุด: สถานะ + ปุ่ม */}
                   <div className="flex items-center gap-3">
                     <div className="text-sm">
                       STATUS:{" "}
@@ -123,7 +114,7 @@ export default function OrderHistory() {
                 {isOpen && (
                   <div className="border-t">
                     {loadingItems[o.order_id] && (
-                      <div className="p-4 text-gray-500">กำลังโหลดรายการสินค้า…</div>
+                      <div className="p-4 text-gray-500">Loading product list…</div>
                     )}
                     {errorItems[o.order_id] && (
                       <div className="p-4 text-red-600">{errorItems[o.order_id]}</div>
@@ -169,7 +160,6 @@ export default function OrderHistory() {
           })}
         </div>
       </main>
-
       <Footer />
     </div>
   );

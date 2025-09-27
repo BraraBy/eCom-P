@@ -41,33 +41,32 @@
   display: none;
 }
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none; 
 }
 
-/* ===== Grid.js polish / bugfix ===== */
-.gridjs-thead .gridjs-th {            /* ตัดเส้นตั้งกลางตาราง */
+.gridjs-thead .gridjs-th {
   box-shadow: none !important;
   border-right: none !important;
 }
-.gridjs-td, .gridjs-th {              /* กันเส้นตั้งทุกช่อง */
+.gridjs-td, .gridjs-th {
   border-right: none !important;
 }
-.gridjs-tbody .gridjs-tr:hover .gridjs-td {   /* hover row นุ่ม ๆ */
+.gridjs-tbody .gridjs-tr:hover .gridjs-td {
   background-color: #fafafa !important;
 }
-.gridjs-container {                   /* มุมโค้ง + overflow สวยขึ้น */
+.gridjs-container {
   border-radius: 16px !important;
   overflow: hidden !important;
 }
-.gridjs-thead {                       /* header ลอยนิด ๆ อ่านง่าย */
+.gridjs-thead {
   position: sticky;
   top: 0;
   z-index: 5;
   background: #f9fafb !important;
   box-shadow: inset 0 -1px 0 #e5e7eb;
 }
-.gridjs-table {                       /* เคาะระยะของตาราง */
+.gridjs-table {
   border-spacing: 0 !important;
 }
 .gridjs-th, .gridjs-td {

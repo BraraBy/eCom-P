@@ -4,7 +4,6 @@ const { Pool } = pool;
 import dotenv from 'dotenv';
 dotenv.config({ path: 'setting.env' });
 
-// psql -U postgres -h localhost -d database -p 5432
 const postgres = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,

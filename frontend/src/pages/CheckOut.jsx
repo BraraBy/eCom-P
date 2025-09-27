@@ -1,4 +1,3 @@
-// src/pages/CheckOut.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import useCart from "../hooks/useCart";
@@ -15,7 +14,6 @@ export default function CheckOut() {
   const navigate = useNavigate();
   const { items, patchQty, remove, clear } = useCart();
 
-  // โหลด user จาก localStorage เพื่อเติมที่อยู่
   const [user, setUser] = useState(null);
   useEffect(() => {
     try {
@@ -29,7 +27,6 @@ export default function CheckOut() {
     const [promo, setPromo] = useState(null);
     const [promoCalc, setPromoCalc] = useState(null);
 
-  // สรุปราคา
   const subtotal = useMemo(
     () => items.reduce((sum, it) => sum + Number(it.price || 0) * Number(it.quantity || 0), 0),
     [items]
@@ -79,7 +76,6 @@ export default function CheckOut() {
     }
   };
 
-  // ส่งคำสั่งซื้อ
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState("");
   const [successId, setSuccessId] = useState(null);
@@ -95,7 +91,7 @@ export default function CheckOut() {
         text: "Please log in before making payment.",
         confirmButtonColor: "#3085d6",
       });
-      navigate("/login?redirect=/checkout"); // guest → ไปล็อกอินก่อน
+      navigate("/login?redirect=/checkout");
       return;
     }
     if (items.length === 0) {
@@ -149,7 +145,7 @@ export default function CheckOut() {
       });
 
       setSuccessId(data.result?.order_id || null);
-      clear(); // ล้างตะกร้าของ user ปัจจุบัน
+      clear();
       setPlacing(false);
 
       await Swal.fire({
@@ -169,7 +165,7 @@ export default function CheckOut() {
             order_id: data.result.order_id,
           });
         } catch (e) {
-          console.warn("redeem failed:", e); // ไม่ต้องบล็อกผู้ใช้
+          console.warn("redeem failed:", e);
         }
       }
 
@@ -348,7 +344,7 @@ export default function CheckOut() {
 
               {successId && (
                 <p className="text-sm text-green-600">
-                  สั่งซื้อสำเร็จ! หมายเลขคำสั่งซื้อ:{" "}
+                  Order completed! Order number:{" "}
                   <span className="font-semibold">{successId}</span>
                 </p>
               )}

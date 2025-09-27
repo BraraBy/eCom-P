@@ -1,8 +1,8 @@
-import express from 'express'; // Library HTTP request
+import express from 'express';
 import dotenv from 'dotenv'; 
-import cors from 'cors'; // โหลด Middleware
+import cors from 'cors';
 
-dotenv.config({ path: 'setting.env' });  // โหลดไฟล์ setting 
+dotenv.config({ path: 'setting.env' });
 
 const app = express();
 const port = process.env.WEB_PORT;
@@ -12,9 +12,8 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json());  // Middleware ให้ระบบรองรับ การรับค่าเข้ามาได้โดยใช้ไฟล์ JSON
-app.use(express.urlencoded({ extended: true }));  // Middleware ให้ระบบรองรับ การรับค่าเข้ามาได้โดยใช้ไฟล์ urlencoded
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 import categoryRoutes from './routes/categoryRoutes.js' ;
 import customersRoutes from './routes/customersRoutes.js' ;

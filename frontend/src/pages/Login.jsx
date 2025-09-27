@@ -25,7 +25,6 @@ const SignInAndSignUp = () => {
 
   return (
     <main className="relative min-h-screen w-full bg-white grid place-items-center px-4">
-      {/* กล่องคอนเทนต์ที่ยืดได้ตามหน้าจอ */}
       <div className="w-full max-w-sm sm:max-w-md md:max-w-lg">
         {/* Header */}
         <header className="absolute top-0 left-0 right-0 flex justify-between items-center px-6 py-4">
@@ -65,7 +64,6 @@ const SignInAndSignUp = () => {
             )}
           </div>
         </header>
-
 
         {/* เนื้อหา (login/sign up) */}
         <section className="space-y-4 text-center pt-25">

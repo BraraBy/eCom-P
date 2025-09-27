@@ -79,7 +79,7 @@ const createOrd = async (customers_id, total_amount) => {
        RETURNING *`,
       [customers_id, total_amount]
     );
-    return result.rows[0]; // return order ที่เพิ่งสร้าง
+    return result.rows[0];
   } catch (err) {
     console.error("Error creating order:", err);
     throw err;
@@ -126,7 +126,6 @@ const createOrderWithItems = async (customers_id, items = [], total_amount = 0) 
   try {
     await client.query('BEGIN');
 
-    // 1) สร้าง order (สถานะแล้วแต่ระบบคุณ — ใช้ COMPLETED/PLACED)
     const orderRes = await client.query(
       `INSERT INTO orders (customer_id, total_amount, status)
        VALUES ($1, $2, 'COMPLETED') RETURNING order_id`,
@@ -134,13 +133,11 @@ const createOrderWithItems = async (customers_id, items = [], total_amount = 0) 
     );
     const order_id = orderRes.rows[0].order_id;
 
-    // 2) วนแต่ละรายการ: lock สินค้า, เช็คสต็อก, ตัดสต็อก, แทรก order_details
     for (const it of items) {
       const pid = Number(it.product_id);
       const qty = Math.max(1, Number(it.quantity || 1));
       const price = Number(it.price || 0);
 
-      // ล็อกแถวสินค้าป้องกัน race condition
       const prodRes = await client.query(
         `SELECT product_id, name, stock FROM products WHERE product_id = $1 FOR UPDATE`,
         [pid]

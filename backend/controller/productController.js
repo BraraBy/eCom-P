@@ -100,7 +100,6 @@ const getProByName = async (data) => {
   }
 };
 
-// Fix the checkProName function
 const checkProName = async (name) => {
   const client = await postgres.connect();
   try {
@@ -117,11 +116,9 @@ const checkProName = async (name) => {
   }
 };
 
-// Create new product
 const createPro = async ({ name, price = 0, stock = 0, image_url = null, category_id = null }) => {
   const client = await postgres.connect();
   try {
-    // Check for duplicate name first
     const checkResult = await client.query(
       'SELECT product_id FROM products WHERE name = $1',
       [name]
@@ -138,7 +135,7 @@ const createPro = async ({ name, price = 0, stock = 0, image_url = null, categor
     );
     return result.rows[0];
   } catch (err) {
-    if (err.code === '23505') { // PostgreSQL unique violation code
+    if (err.code === '23505') {
       throw new Error('Product name already exists');
     }
     throw err;
@@ -176,8 +173,6 @@ const updatePro = async (product_id, data) => {
   } finally { client.release(); }
 };
 
-
-// Force Delete Prefix record.
 const deletePro = async (product_id) => {
   const client = await postgres.connect();
   try {
@@ -202,7 +197,6 @@ const listProducts = async ({ page = 1, limit = 10, search = '', category_id = n
     const params = [];
     let i = 1;
 
-    // join กับ category อยู่แล้ว จะ filter จากทั้ง id/slug ก็ได้
     if (category_id) { where.push(`p.category_id = $${i++}`); params.push(Number(category_id)); }
     if (category_slug) { where.push(`LOWER(c.slug) = LOWER($${i++})`); params.push(String(category_slug)); }
     if (search?.trim()) {

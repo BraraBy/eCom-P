@@ -2,7 +2,6 @@ import postgres from "../utils/db.js";
 
 let result = "";
 
-// ✅ helper
 const ok = (res, data, status = 200) =>
   res.status(status).json({ status: String(status), result: data });
 const err = (res, message = "Server Error", status = 500) =>

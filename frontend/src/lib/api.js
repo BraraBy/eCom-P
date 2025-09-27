@@ -9,7 +9,6 @@ async function tryRefreshAccessToken() {
   const refreshToken = localStorage.getItem('refreshToken');
   if (!refreshToken) return null;
 
-  // เรียก /api/customers/refresh ตรง ๆ (ไม่ import ไฟล์อื่น)
   const res = await fetch(`${API_URL}/api/customers/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -21,7 +20,6 @@ async function tryRefreshAccessToken() {
   const newToken = data?.result?.accessToken;
   if (newToken) {
     localStorage.setItem('accessToken', newToken);
-    // แจ้งว่า token เปลี่ยน (เผื่อหน้าอื่นฟัง event)
     window.dispatchEvent(new Event('auth:changed'));
     return newToken;
   }
@@ -42,11 +40,9 @@ export async function apiFetch(path, options = {}) {
     });
   };
 
-  // ครั้งที่ 1
   let res = await doFetch();
   if (res.ok) return res.json();
 
-  // ถ้า 401 ให้ลอง refresh แล้วยิงใหม่ 1 ครั้ง
   if (res.status === 401 && path !== '/api/customers/refresh') {
     const refreshed = await tryRefreshAccessToken();
     if (refreshed) {
@@ -55,7 +51,6 @@ export async function apiFetch(path, options = {}) {
     }
   }
 
-  // ยังไม่โอเค -> โยน error
   const text = await res.text();
   throw new Error(`HTTP ${res.status}: ${text}`);
 }

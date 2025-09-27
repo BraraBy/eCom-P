@@ -1,4 +1,3 @@
-// src/pages/Product.jsx
 import Swal from "sweetalert2";
 import { useSearchParams } from "react-router-dom";
 import useProduct from "../hooks/useProduct";
@@ -63,7 +62,7 @@ export default function Product() {
       </div>
 
       {count === 0 ? (
-        <div className="text-gray-500">ไม่พบสินค้า</div>
+        <div className="text-gray-500">No products found</div>
       ) : (
         <div className="relative">
           <button

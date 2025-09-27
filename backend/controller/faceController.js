@@ -28,7 +28,6 @@ const getFacById = async (customer_id) => {
   }
 };
 
-// Create new customers
 const createFac = async (data) => {
     const { image_data } = data;
     const client = await postgres.connect();
@@ -48,7 +47,6 @@ const createFac = async (data) => {
     }
   };
 
-// Update customers
 const updateFac = async (customer_id, data) => {
     const { image_data } = data;
     const client = await postgres.connect();
@@ -70,8 +68,6 @@ const updateFac = async (customer_id, data) => {
     }
   };
 
-
-// Force Delete Prefix record.
 const deleteFac = async (customer_id) => {
   const client = await postgres.connect();
   try {

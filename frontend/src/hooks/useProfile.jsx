@@ -60,7 +60,7 @@ export default function useProfile() {
       setFormData(shaped);
       setOriginal(shaped);
     } catch (e) {
-      setError(e.message || "โหลดข้อมูลไม่สำเร็จ");
+      setError(e.message || "Data loading failed");
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,6 @@ export default function useProfile() {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    // sync localStorage ทุกครั้ง
     try {
       const local = JSON.parse(localStorage.getItem("user") || "{}");
       local.first_name = formData.first_name;
@@ -101,15 +100,15 @@ export default function useProfile() {
       local.state = formData.state;
       local.country = formData.country;
       local.zip_code = formData.zip_code;
-      local.image_profile = formData.image_profile;  // 👈 สำคัญ
+      local.image_profile = formData.image_profile;
       localStorage.setItem("user", JSON.stringify(local));
-      window.dispatchEvent(new Event("auth:changed")); // 👈 แจ้ง Navbar
+      window.dispatchEvent(new Event("auth:changed"));
     } catch {}
 
     setOriginal(formData);
     setTab("overview");
   } catch (e) {
-    setError(e.message || "บันทึกไม่สำเร็จ");
+    setError(e.message || "Recording failed");
   } finally {
     setSaving(false);
   }
@@ -133,7 +132,6 @@ const uploadAvatar = useCallback(async (file) => {
   if (url) {
     setFormData((p) => ({ ...p, image_profile: url }));
 
-    // 👇 เพิ่มตรงนี้
     try {
       const local = JSON.parse(localStorage.getItem("user") || "{}");
       local.image_profile = url;

@@ -11,7 +11,6 @@ async function parseJSON(res) {
 
 function url(p) {
   if (!API_URL) throw new Error("VITE_API_URL is not set");
-  // force /api prefix so frontend calls backend at /api/…
   return `${API_URL}/api${p.startsWith("/") ? p : `/${p}`}`;
 }
 

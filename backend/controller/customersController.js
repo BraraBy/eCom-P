@@ -1,5 +1,4 @@
 import postgres from '../utils/db.js';
-import path from 'path';
 import multer from 'multer';
 import bcrypt from 'bcrypt';
 
@@ -46,7 +45,6 @@ const getCusById = async (customers_id) => {
   }
 };
 
-// Get Prefix by Name. Only returns prefix where isDelete is false.
 const getCusByName = async (data) => {
   const client = await postgres.connect();
   const { first_name } = data;
@@ -75,8 +73,6 @@ const getCusByEmail = async (data) => {
   }
 };
 
-// Convert role name to role ID
-// This function assumes that the role name is unique in the role table.
 const roleNameToID = async (role_id) => {
   const client = await postgres.connect();
   try {
@@ -109,7 +105,6 @@ const checkCus = async (data) => {
   }
 };
 
-// Create new customers
 const createCus = async (data) => {
   const { first_name, last_name, phone, address, street, city, state, country, zip_code, password, email, role_id } = data;
 
@@ -137,7 +132,6 @@ const createCus = async (data) => {
   }
 };
 
-// Update customers
 const updateCus = async (customers_id, data) => {
   const { first_name, last_name, phone, address, street, city, state, country, zip_code, image_profile, password, email } = data;
   const client = await postgres.connect();
@@ -177,8 +171,6 @@ const updateCus = async (customers_id, data) => {
   }
 };
 
-
-// Force Delete Prefix record.
 const deleteCus = async (customers_id) => {
   const client = await postgres.connect();
   try {

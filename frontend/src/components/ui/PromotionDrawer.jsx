@@ -24,7 +24,6 @@ const PromotionDrawer = ({ isOpen, onClose }) => {
   const [promos, setPromos] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // ล็อกสกรอลล์
   useEffect(() => {
     const root = document.documentElement;
     if (isOpen) root.style.overflow = "hidden";
@@ -32,7 +31,6 @@ const PromotionDrawer = ({ isOpen, onClose }) => {
     return () => { root.style.overflow = ""; };
   }, [isOpen]);
 
-  // โหลดโปรโมชันเมื่อเปิด
   useEffect(() => {
     if (!isOpen) return;
     setLoading(true);
@@ -42,7 +40,6 @@ const PromotionDrawer = ({ isOpen, onClose }) => {
       .finally(() => setLoading(false));
   }, [isOpen]);
 
-  // ปิดเมื่อคลิกนอก/กด ESC
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (drawerRef.current && !drawerRef.current.contains(e.target) && overlayRef.current?.contains(e.target)) {
@@ -61,7 +58,6 @@ const PromotionDrawer = ({ isOpen, onClose }) => {
   const copy = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      // toast ภายในแบบง่าย
       const ev = new CustomEvent("app:toast", { detail: { type: "success", message: "Copied coupon code" } });
       window.dispatchEvent(ev);
     } catch {}

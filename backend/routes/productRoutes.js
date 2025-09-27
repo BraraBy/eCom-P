@@ -4,8 +4,6 @@ import { upload, uploadProductImage } from '../utils/uploadImage.js';
 
 const rt = express.Router();
 
-// <-- เอา route ซ้ำตัวแรกออก (ที่ส่งทั้งหมดโดยไม่ดู query) -->
-
 rt.get('/', async (req, res) => {
   try {
     const { page, limit, search, category_id, category_slug } = req.query;

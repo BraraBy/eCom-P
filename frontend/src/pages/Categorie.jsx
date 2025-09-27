@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useNavigate, useSearchParams} from "react-router-dom"; // ⬅️ เพิ่ม useNavigate
+import { useParams, useNavigate, useSearchParams} from "react-router-dom";
 import { Navbar, Footer } from "../components";
 import { Menu, X } from "lucide-react";
 import useProduct from "../hooks/useProduct";
@@ -22,7 +22,6 @@ export default function Categorie() {
   const [catErr, setCatErr] = useState("");
   const [sort, setSort] = useState("recommended");
 
-  // โหลดหมวดจาก DB
   useEffect(() => {
     (async () => {
       try {
@@ -69,26 +68,23 @@ export default function Categorie() {
     })();
   }, [slug]);
 
-  // ✅ ฟังก์ชันเลือกหมวด + อัปเดต URL
   const handleSelectCategory = (cat) => {
     setActive(cat.slug);
     setSidebarOpen(false);
     if (cat.slug === "all") {
-      navigate("/categories");                 // /categories
+      navigate("/categories");
     } else {
-      navigate(`/categories/${cat.slug}`);     // /categories/<slug>
+      navigate(`/categories/${cat.slug}`);
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // เรียกสินค้า
   const categoryParam = active === "all" ? undefined : active;
   const { items, loading: loadingProducts, error: prodErr } = useProduct({
     category: categoryParam,
     search: search || undefined,
   });
 
-  // sort ฝั่ง client
   const sortedItems = useMemo(() => {
     if (!items) return [];
     if (sort === "price-asc")  return [...items].sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
@@ -158,7 +154,7 @@ export default function Categorie() {
             : chips.map((c) => (
                 <button
                   key={c.id}
-                  onClick={() => handleSelectCategory(c)}    // ⬅️ ใช้ฟังก์ชันนี้
+                  onClick={() => handleSelectCategory(c)}
                   className={`w-full text-left px-3 py-2 rounded-lg border transition ${
                     String(active) === String(c.slug)
                       ? "bg-gray-900 text-white border-gray-900"
@@ -186,10 +182,9 @@ export default function Categorie() {
                     ))
                   : chips.map((c) => (
                       <button
-                        key={c.slug}                                // <-- use slug as key for consistency
+                        key={c.slug} 
                         onClick={() => handleSelectCategory(c)}
                         className={`px-3 py-2 rounded-full border text-sm transition ${
-                          // <-- compare active to slug (was comparing to id) so UI & filtering stay in sync
                           String(active) === String(c.slug)
                             ? "bg-gray-900 text-white border-gray-900"
                             : "bg-white text-gray-700 hover:bg-gray-50 border-gray-200"
